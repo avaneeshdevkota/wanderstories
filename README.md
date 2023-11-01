@@ -1,117 +1,125 @@
-The content below is an example project proposal / requirements document. Replace the text below the lines marked "__TODO__" with details specific to your project. Remove the "TODO" lines.
-
-(__TODO__: your project name)
-
-# Shoppy Shoperson 
+# WanderStories
 
 ## Overview
 
-(__TODO__: a brief one or two paragraph, high-level description of your project)
+WanderStories is a platform designed to inspire, connect, and celebrate the spirit of travel. WanderStories empowers users to share their unique travel experiences by posting captivating travel stories in their profiles while providing an immersive space to discover, connect with, and learn from each other's journeys.
 
-Remembering what to buy at the grocery store is waaaaay too difficult. Also, shopping for groceries when you're hungry leads to regrettable purchases. Sooo... that's where Shoppy Shoperson comes in!
-
-Shoppy Shoperson is a web app that will allow users to keep track of multiple grocery lists. Users can register and login. Once they're logged in, they can create or view their grocery list. For every list that they have, they can add items to the list or cross off items.
-
+WanderStory provides users with a user-friendly experience, starting with secure account creation and login. Once logged in, they can seamlessly access an array of features, including the ability to peruse travel stories contributed by fellow community members and post their own adventures. Users have full control over their content, with the option to edit or delete their previously shared stories. Additionally, the platform offers a user search feature, allowing individuals to discover and explore posts authored by specific users and bookmark posts that they enjoy.
 
 ## Data Model
 
-(__TODO__: a description of your application's data and their relationships to each other) 
+WanderStories's data model revolves around two central entities: Users and Stories.
 
-The application will store Users, Lists and Items
+* Users can create multiple stories.
+* Users can follow multiple other users.
+* Each story can be bookmarked, liked, or commented on by multiple users. 
 
-* users can have multiple lists (via references)
-* each list can have multiple items (by embedding)
 
-(__TODO__: sample documents)
-
-An Example User:
+**An Example User**
 
 ```javascript
 {
-  username: "shannonshopper",
-  hash: // a password hash,
-  lists: // an array of references to List documents
+  username: "based_traveller",
+  hash: "hashed_password",
+  stories: ["story_id_1", "story_id_2", "story_id_3"], // array of references to Story documents
+  following: ["user_id_1", "user_id_2"] // array of references to users followed by the user
+  bookmarks: ["bookmark_id_1", "bookmark_id_2"] // array of references to bookmarked Story documents
 }
 ```
 
-An Example List with Embedded Items:
+**An Example Story with Embedded Comments**
 
 ```javascript
 {
-  user: // a reference to a User object
-  name: "Breakfast foods",
-  items: [
-    { name: "pancakes", quantity: "9876", checked: false},
-    { name: "ramen", quantity: "2", checked: true},
-  ],
-  createdAt: // timestamp
+  title: "A Journey to the Amazon Rainforest",
+  story_text: "Incredible adventure in the Amazon rainforest...",
+  images: ["image_id_1", "image_id_2"],
+  location: "Amazon Rainforest",
+  created_at: "2023-10-15T08:30:00Z", //timestamp
+  author: "based_traveller"
+  likes: ["user_id_1", "user_id_1"] // array of references to users that have liked the story
+  comments: [ // array of comments left by other users on the post
+    {user_id: "user_id_1", comment_body: "Lovely post!"},
+    {user_id: "user_id_2", comment_body: "Low quality post."}
+  ]
 }
 ```
-
 
 ## [Link to Commented First Draft Schema](db.mjs) 
 
-(__TODO__: create a first draft of your Schemas in db.mjs and link to it)
-
 ## Wireframes
 
-(__TODO__: wireframes for all of the pages on your site; they can be as simple as photos of drawings or you can use a tool like Balsamiq, Omnigraffle, etc.)
+/login or /register page for creating account or registering
+![loginregister](documentation/wireframes/register.png)
 
-/list/create - page for creating a new shopping list
+/home page for showing newest posts
+![home](documentation/wireframes/home.png)
 
-![list create](documentation/list-create.png)
+/user/slug for showing another user's story
+![storyothers](documentation/wireframes/story-others.png)
 
-/list - page for showing all shopping lists
+/user/slug for showing user's own story
+![storyown](documentation/wireframes/story-own.png)
 
-![list](documentation/list.png)
+/user for showing another user's profile
+![userother](documentation/wireframes/user-other.png)
 
-/list/slug - page for showing specific shopping list
+/user for showing user's own profile
+![userother](documentation/wireframes/user-own.png)
 
-![list](documentation/list-slug.png)
+/bookmarks for showing user's bookmarks
+![bookmarks](documentation/wireframes/bookmarks.png)
 
 ## Site map
 
-(__TODO__: draw out a site map that shows how pages are related to each other)
+![Sitemap](documentation/sitemap.png)
 
-Here's a [complex example from wikipedia](https://upload.wikimedia.org/wikipedia/commons/2/20/Sitemap_google.jpg), but you can create one without the screenshots, drop shadows, etc. ... just names of pages and where they flow to.
+## User Stories
 
-## User Stories or Use Cases
-
-(__TODO__: write out how your application will be used through [user stories](http://en.wikipedia.org/wiki/User_story#Format) and / or [use cases](https://en.wikipedia.org/wiki/Use_case))
-
-1. as non-registered user, I can register a new account with the site
-2. as a user, I can log in to the site
-3. as a user, I can create a new grocery list
-4. as a user, I can view all of the grocery lists I've created in a single list
-5. as a user, I can add items to an existing grocery list
-6. as a user, I can cross off items in an existing grocery list
+| As a                    | I want                                                      | so that                                                        |
+|-------------------------|-------------------------------------------------------------|----------------------------------------------------------------|
+| traveler                | to create and share my travel stories                       | I can inspire and connect with fellow adventurers.             |
+| reader                  | to explore a variety of travel stories from different users | I can discover new destinations and experiences.               |
+| user                    | to like and comment on stories                              | I can engage with and appreciate the content shared by others. |
+| aspiring globetrotter   | to bookmark my favorite travel stories                      | I can revisit them and plan future trips.                      |
+| travel blogger          | to edit my published stories                                | I can update them with new information and experiences.        |
+| user                    | follow other travellers whose stories I enjoy               | I can stay updated on their adventures.                        |
+| passionate photographer | easily upload images with my travel stories                 | I can visually narrate my journeys                             |
 
 ## Research Topics
 
-(__TODO__: the research topics that you're planning on working on along with their point values... and the total points of research topics listed)
+Certainly, here's the information presented in the requested format:
 
-* (5 points) Integrate user authentication
-    * I'm going to be using passport for user authentication
-    * And account has been made for testing; I'll email you the password
-    * see <code>cs.nyu.edu/~jversoza/ait-final/register</code> for register page
-    * see <code>cs.nyu.edu/~jversoza/ait-final/login</code> for login page
-* (4 points) Perform client side form validation using a JavaScript library
-    * see <code>cs.nyu.edu/~jversoza/ait-final/my-form</code>
-    * if you put in a number that's greater than 5, an error message will appear in the dom
-* (5 points) vue.js
-    * used vue.js as the frontend framework; it's a challenging library to learn, so I've assigned it 5 points
+**React.js**
+- __What is it?__ React.js is a JavaScript library for building user interfaces. It allows you to create reusable UI components, making it easier to manage complex UIs.
+- __Why use it?__ I want to use React.js for my web app's frontend to create a responsive, dynamic, and efficient user interface. It simplifies UI development and promotes a component-based architecture.
+- __List of possible candidate modules or solutions:__ Redux, React Router, Axios, Redux-Saga.
+- __Points for research topic:__ 5 points
 
-10 points total out of 8 required points (___TODO__: addtional points will __not__ count for extra credit)
+**React-Markdown or Draft.js**
+- __What is it?__ React-Markdown and Draft.js are libraries for enabling users to write formatted content. React-Markdown parses and displays Markdown content, while Draft.js provides a rich text editor.
+- __Why use it?__ These libraries enhance user interaction by allowing the creation of well-formatted travel stories and comments in your app.
+- __List of possible candidate modules or solutions:__ React-Markdown, Draft.js, Markdown editor plugins.
+- *Points for research topic:* 4 points
 
+**TailwindCSS**
+- __What is it?__ TailwindCSS is a utility-first CSS framework. It offers pre-defined CSS classes that make it easy to style your web app without writing custom CSS from scratch.
+- __Why use it?__ Use TailwindCSS to streamline and speed up the process of styling your web app. It promotes consistency in design and is highly customizable.
+- __List of possible candidate modules or solutions:__ CSS frameworks, like Bootstrap or Material-UI.
+- __Points for research topic:__ 1 point
+
+**Google Maps API**
+- __What is it?__ The Google Maps API provides tools for integrating interactive maps and location-based services into your web app.
+- __Why use it?__ Incorporating the Google Maps API allows you to enhance user experiences with interactive maps, geolocation, and location-based features.
+- __List of possible candidate modules or solutions:__ Mapbox, Leaflet, OpenStreetMap.
+- __Points for research topic:__ 1 point
 
 ## [Link to Initial Main Project File](app.mjs) 
 
-(__TODO__: create a skeleton Express application with a package.json, app.mjs, views folder, etc. ... and link to your initial app.mjs)
-
 ## Annotations / References Used
 
-(__TODO__: list any tutorials/references/etc. that you've based your code off of)
-
-1. [passport.js authentication docs](http://passportjs.org/docs) - (add link to source code that was based on this)
-2. [tutorial on vue.js](https://vuejs.org/v2/guide/) - (add link to source code that was based on this)
+* [React Documentation](https://devdocs.io/react/)
+* [React Markdown](https://www.npmjs.com/package/react-markdown)
+* [TailwindCSS Documentation](https://v2.tailwindcss.com/docs)
+* [Google Maps API](https://developers.google.com/maps)
 
