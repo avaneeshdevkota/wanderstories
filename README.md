@@ -83,8 +83,8 @@ WanderStories's data model revolves around two central entities: Users and Stori
 | user                    | to like and comment on stories                              | I can engage with and appreciate the content shared by others. |
 | aspiring globetrotter   | to bookmark my favorite travel stories                      | I can revisit them and plan future trips.                      |
 | travel blogger          | to edit my published stories                                | I can update them with new information and experiences.        |
-| user                    | follow other travellers whose stories I enjoy               | I can stay updated on their adventures.                        |
-| passionate photographer | easily upload images with my travel stories                 | I can visually narrate my journeys                             |
+| user                    | to follow other travellers whose stories I enjoy               | I can stay updated on their adventures.                        |
+| passionate photographer | to easily upload images with my travel stories                 | I can visually narrate my journeys                             |
 
 ## Research Topics
 

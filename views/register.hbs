@@ -1,0 +1,10 @@
+{{#if error}}
+    {{error}}
+{{/if}}
+
+<form method = "post" action = "/register">
+    <input type = "text" name = "username" placeholder = "Username" required> 
+    <input type = "password" name = "pw" placeholder = "Password" required>
+    <input type = "password" name = "pwc" placeholder = "Confirm Password" required>
+    <input type = "submit" value = "Register">
+</form>
