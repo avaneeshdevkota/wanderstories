@@ -2,8 +2,14 @@
 {{#if user}}
 
     <h1> Welcome {{user.username}} </h1>
+
+    {{#if user.bio}} 
+        {{user.bio}}
+    {{/if}}
+
     <a href="/logout">Logout</a>
-    
+    <a href="/{{user.username}}/edit">Edit Profile</a>
+
 {{else}}
 
     <a href="/register">Register</a>

@@ -10,6 +10,9 @@ const userSchema = new mongoose.Schema({
   // Password hash for secure user authentication
   hash: { type: String, required: true },
 
+  // Bio to display on user profile
+  bio: { type: String, required: false},
+
   // Reference to the user's own stories
   stories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }],
 

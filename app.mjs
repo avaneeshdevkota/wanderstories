@@ -33,18 +33,6 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.get('/logout', (req, res) => {
-
-    req.session.destroy((err) => {
-
-        if (err) {
-          console.error('Error destroying session:', err);
-        }
-
-        res.redirect('/');
-      });
-})
-
 app.post('/register', async (req, res) => {
 
     const foundUser = await User.findOne({username: req.body.username});
@@ -61,6 +49,7 @@ app.post('/register', async (req, res) => {
         const newUser = new User({
             username: req.body.username,
             hash: await argon2.hash(req.body.pw),
+            bio: '',
             stories: [],
             following: [],
             bookmarks: []
@@ -105,6 +94,71 @@ app.post('/login', async (req, res) => {
 
     catch(e) {
         res.status(500).send("Internal Server Error");
+    }
+});
+
+app.get('/logout', (req, res) => {
+
+    req.session.destroy((err) => {
+
+        if (err) {
+          console.error('Error destroying session:', err);
+        }
+
+        res.redirect('/');
+      });
+})
+
+app.get('/:username/edit', (req, res) => {
+
+    if (req.session.user.username != req.params.username) {
+        res.redirect('/');
+    }
+
+    res.render('profile_edit', {user: req.session.user});
+})
+
+app.post('/:username/edit', async (req, res) => {
+
+    if (req.session.user.username == req.body.username) {
+
+        if (req.session.user.bio != req.body.bio) {
+
+            await User.findOneAndUpdate({username: req.session.user.username}, {bio: req.body.bio});
+            req.session.user = await User.findOne({username: req.session.user.username});
+        }
+        
+        res.redirect('/');
+    }
+
+    else {
+
+        const foundUser = await User.findOne({username: req.body.username});
+
+        if (foundUser) {
+            res.render('profile_edit', {error: 'Username already taken.'});
+        }
+
+        else {
+
+            if (req.body.pw) {
+
+                if (await argon2.verify(req.session.user.hash, req.body.pw)) {
+
+                    await User.findOneAndUpdate({username: req.session.user.username}, {username: req.body.username});
+                    req.session.user = await User.findOne({username: req.body.username});
+                    res.redirect('/');
+                }
+
+                else {
+                    res.render('profile_edit', {error: 'Incorrect Password.'});
+                }
+            }
+
+            else {
+                res.render('profile_edit', {error: 'Enter your password to change username.'});
+            }
+        }
     }
 });
 
