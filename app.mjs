@@ -5,7 +5,6 @@ import session from "express-session";
 import mongoose from "mongoose";
 import path from 'path'
 import { fileURLToPath } from 'url';
-import argon2 from 'argon2'
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -48,7 +47,7 @@ app.post('/register', async (req, res) => {
     try {
         const newUser = new User({
             username: req.body.username,
-            hash: await argon2.hash(req.body.pw),
+            hash: req.body.pw,
             bio: '',
             stories: [],
             following: [],
@@ -77,7 +76,7 @@ app.post('/login', async (req, res) => {
 
         if (foundUser) {
 
-            if (await argon2.verify(foundUser.hash, req.body.pw)) {
+            if (foundUser.hash == req.body.pw) {
                 req.session.user = foundUser;
                 res.redirect('/')
             }
@@ -143,7 +142,7 @@ app.post('/:username/edit', async (req, res) => {
 
             if (req.body.pw) {
 
-                if (await argon2.verify(req.session.user.hash, req.body.pw)) {
+                if (req.session.user.hash == req.body.pw) {
 
                     await User.findOneAndUpdate({username: req.session.user.username}, {username: req.body.username});
                     req.session.user = await User.findOne({username: req.body.username});
@@ -162,4 +161,4 @@ app.post('/:username/edit', async (req, res) => {
     }
 });
 
-app.listen(process.env.PORT || 3000);
+app.listen(process.env.PORT ?? 3000);
