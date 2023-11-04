@@ -2,13 +2,38 @@ import "./config.mjs";
 import "./db.mjs";
 import express from 'express'
 import session from "express-session";
+import multer from 'multer';
 import mongoose from "mongoose";
 import path from 'path'
 import { fileURLToPath } from 'url';
+import { existsSync, mkdirSync } from "fs";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const storageDirectory = './images'; // Specify the destination directory
+const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
+
+// Ensure the destination directory exists or create it if necessary
+
+if (!existsSync(storagePath)) {
+    mkdirSync(storagePath, { recursive: true }); // Create the directory recursively
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, storageDirectory);
+  },
+  filename: (req, file, cb) => {
+    const extArray = file.mimetype.split('/');
+    const extension = extArray[extArray.length - 1];
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, file.originalname.split('.')[0] + '-' + uniqueSuffix + '.' + extension);
+  },
+});
+
+const upload = multer({ storage: storage });
 
 const sessionOptions = { 
 	secret: 'secretCode', 
@@ -108,6 +133,83 @@ app.get('/logout', (req, res) => {
       });
 })
 
+app.get('/u/:username', async (req, res) => {
+
+    try {
+        const user = await User.findOne({username: req.params.username});
+        const posts = await Story.find({author: user});
+        res.render('profile', {stories: posts, own: req.session.user.username === req.params.username, user: req.session.user})
+    }
+
+    catch{
+        res.status(500).send("Something went wrong.");
+    }
+});
+
+app.get('/story/:storyID', async (req, res) => {
+
+    try {
+        const story = await Story.findOne({_id : req.params.storyID});
+        if (story) {
+            res.render('story', {story: story, own: req.session.user._id == story.author});
+        }
+
+        else {
+            res.send("Oops! Can't find that story.");
+        }
+    }
+
+    catch {
+        res.status(500).send('Internal Server Error.');
+    }
+});
+
+app.post('/story/:storyID', async (req, res) => {
+
+    try {
+        const newComment = {user: req.session.user, username: req.session.user.username, body: req.body.comment}
+        const updatedStory = await Story.findOneAndUpdate({_id: req.params.storyID}, {$push: {comments: newComment}})
+        res.redirect(req.path);
+    }
+
+    catch {
+        res.status(500).send('Internal Server Error');
+    }
+})
+
+app.use('/:imageID', express.static(path.resolve(__dirname, 'images')));
+
+app.get('/make-post', (req, res) => {
+    res.render('post');
+})
+
+app.post('/make-post', upload.array('images'), async (req, res) => {
+
+    const uploadedFiles = req.files;
+
+    try { 
+      // Save the image file URLs to an array
+      const imageUrls = uploadedFiles.map(file => file.path);
+  
+      // Create a new story document with the image URLs
+      const newStory = new Story({
+
+        title: req.body.title, // Assuming you have a title field in your form
+        content: req.body.content, // Assuming you have a content field in your form
+        images: imageUrls, // Store the URLs to the images as an array
+        location: req.body.location, // Assuming you have a location field in your form
+        author: req.session.user,
+      });
+  
+      await newStory.save();
+      res.redirect('/');
+  
+    } catch (error) {
+      console.error(error);
+      res.status(500).send('Error saving the story.');
+    }
+  });
+  
 app.get('/:username/edit', (req, res) => {
 
     if (req.session.user.username != req.params.username) {

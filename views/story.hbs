@@ -1,0 +1,27 @@
+{{#if own}}
+    <a href="/edit/:{{story._id}}">Edit Story</a>
+    <a href="/delete/:{{story._id}}">Delete Story</a>
+{{/if}}
+
+<div>
+    title: {{story.title}}
+    location: {{story.location}}
+    posted on: {{story.timestamp}}
+    likes: {{story.likes.length}}
+    content : {{story.content}}
+    {{#each story.images}}
+        {{this}}
+        <img src="/{{this}}">
+    {{/each}}
+    comments: 
+        {{#each story.comments}}
+            user : {{this.username}} {{this.timestamp}} {{this.body}}
+        {{/each}}
+</div>
+
+{{#unless own}}
+    <form method="post" action="">
+        <textarea name="comment">Leave a Comment!</textarea>
+        <input type="submit" value="Submit">
+    </form>
+{{/unless}}
