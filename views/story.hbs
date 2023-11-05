@@ -1,6 +1,18 @@
 {{#if own}}
     <a href="/edit/{{story._id}}">Edit Story</a>
     <a href="/delete/{{story._id}}">Delete Story</a>
+{{else}}
+    {{#if liked}}
+        <a href="/like/{{story._id}}">Unlike Story</a>
+    {{else}}
+        <a href="/like/{{story._id}}">Like Story</a>
+    {{/if}}
+
+    {{#if bookmarked}}
+        <a href="/bookmark/{{story._id}}">Unbookmark Story</a>
+    {{else}}
+        <a href="/bookmark/{{story._id}}">Bookmark Story</a>
+    {{/if}}
 {{/if}}
 
 <div>
@@ -14,7 +26,7 @@
         <img src="/{{this}}">
     {{/each}}
     comments: 
-        {{#each story.comments}}
+        {{#each story.comments}}  
             user : {{this.username}} {{this.timestamp}} {{this.body}}
         {{/each}}
 </div>

@@ -12,10 +12,7 @@ const userSchema = new mongoose.Schema({
 
   // Bio to display on user profile
   bio: { type: String, required: false},
-
-  // Reference to the user's own stories
-  stories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }],
-
+  
   // List of users that the current user is following
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 

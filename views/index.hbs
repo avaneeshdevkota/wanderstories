@@ -7,6 +7,18 @@
         {{user.bio}}
     {{/if}}
 
+    {{#if bookmarks.length}}
+        <h2>Bookmarked Posts</h2>
+        {{#each bookmarks}}
+            <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+                title: {{this.title}}
+                location: {{this.location}}
+                posted on: {{this.timestamp}}
+                likes: {{this.likes.length}}
+            </div>
+        {{/each}}
+    {{/if}}
+
     <a href="/u/{{user.username}}">Your Profile</a>
     <a href="/make-post">Write a Story!</a>
 
