@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { Mongoose } from "mongoose";
 
 mongoose.connect(process.env.DSN);
 
@@ -16,8 +16,6 @@ const userSchema = new mongoose.Schema({
   // List of users that the current user is following
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
-  // Reference to bookmarked stories
-  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }]
 });
 
 const User = mongoose.model('User', userSchema);
@@ -59,8 +57,20 @@ const storySchema = new mongoose.Schema({
   // Users who have liked the story, referencing User entities
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 
+  // Users who have bookmarked the story, referencing User entities
+  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+
   // Comments associated with the story, an array of embedded comment documents
   comments: [commentSchema]
 });
 
 const Story = mongoose.model('Story', storySchema);
+
+const followSchema = new mongoose.Schema({
+
+  following: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  followed: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+
+})
+
+const Follow = mongoose.model('Follow', followSchema);

@@ -1,6 +1,12 @@
 {{#if own}}
     <a href="/logout">Logout</a>
     <a href="/{{user.username}}/edit">Edit Profile</a>
+{{else}}
+    {{#if following}}
+        <a href="/follow/{{user._id}}">Unfollow</a>
+    {{else}}
+        <a href="/follow/{{user._id}}">Follow</a>
+    {{/if}}
 {{/if}}
 
 {{#each stories}}

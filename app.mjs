@@ -49,16 +49,22 @@ app.use(express.urlencoded({extended : false}));
 
 const User = mongoose.model('User');
 const Story = mongoose.model('Story');
+const Follow = mongoose.model('Follow');
 
 app.get('/', async (req, res) => {
 
     if (req.session.user) {
 
-        const user = await User.findOne({_id: req.session.user._id});
-        const bookmarked_ids = user.bookmarks;
-        const bookmarked_posts = await Story.find({_id: {$in: bookmarked_ids}});
+        const bookmarked_posts = await Story.find({bookmarks: req.session.user._id});
+        const liked_posts = await Story.find({likes: req.session.user._id});
 
-        res.render('index', {user: user, bookmarks: bookmarked_posts});
+        const following = (await Follow.find({following: req.session.user._id})).map(follow => follow.followed);
+        const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1});
+
+        res.render('index', {user: req.session.user, 
+                             bookmarks: bookmarked_posts,
+                             likes: liked_posts,
+                             following_posts: latestFollowingPosts});
     }
 
     else {
@@ -150,12 +156,19 @@ app.get('/logout', (req, res) => {
 app.get('/u/:username', async (req, res) => {
 
     try {
+
         const user = await User.findOne({username: req.params.username});
         const posts = await Story.find({author: user});
-        res.render('profile', {stories: posts, own: req.session.user.username === req.params.username, user: req.session.user})
+        const following = await Follow.findOne({following: req.session.user._id, followed: user._id});
+        
+        res.render('profile', {stories: posts,
+                                own: req.session.user.username === req.params.username,
+                                user: user,
+                                following: following ? true : false});
     }
 
-    catch{
+    catch(error) {
+        console.log(error);
         res.status(500).send("Something went wrong.");
     }
 });
@@ -164,18 +177,17 @@ app.get('/story/:storyID', async (req, res) => {
 
     if (req.session.user) {
 
-        const user = await User.findOne({_id: req.session.user._id});
-
         try {
+
             const story = await Story.findOne({_id : req.params.storyID});
 
             if (story) {
 
                 res.render('story', {story: story, 
-                                    own: user._id == story.author, 
-                                    user: user,
-                                    liked: story.likes.includes(user._id),
-                                    bookmarked: user.bookmarks.includes(req.params.storyID)
+                                    own: req.session.user._id == story.author, 
+                                    user: req.session.user,
+                                    liked: story.likes.includes(req.session.user._id),
+                                    bookmarked: story.bookmarks.includes(req.session.user._id)
                 });
             }
 
@@ -184,7 +196,9 @@ app.get('/story/:storyID', async (req, res) => {
             }
         }
 
-        catch {
+        catch(error) {
+
+            console.log(error);
             res.status(500).send('Internal Server Error.');
         }
     }
@@ -287,8 +301,6 @@ app.get('/like/:story_id', async (req, res) => {
 
             if (foundStory) {
 
-                console.log(foundStory.likes, req.session.user._id);
-
                 if (foundStory.likes.includes(req.session.user._id)) {
                     await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {likes: req.session.user._id}});
                 }
@@ -313,18 +325,16 @@ app.get('/bookmark/:story_id', async (req, res) => {
     if (req.session.user) {
 
         try {
-
-            const user = await User.findOne({_id: req.session.user._id});
             const foundStory = await Story.findOne({_id: req.params.story_id});
 
             if (foundStory) {
 
-                if (user.bookmarks.includes(foundStory._id)) {
-                    const updatedUser = await User.findOneAndUpdate({_id: user._id}, {$pull: {bookmarks: foundStory._id}});
+                if (foundStory.bookmarks.includes(req.session.user._id)) {
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {bookmarks: req.session.user._id}});
                 }
 
                 else {
-                    const updatedUser = await User.findOneAndUpdate({_id: user._id}, {$push: {bookmarks: foundStory}});
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {bookmarks: req.session.user}})
                 }
 
                 res.redirect(`/story/${req.params.story_id}`)
@@ -337,6 +347,48 @@ app.get('/bookmark/:story_id', async (req, res) => {
         }
     }
 })
+
+app.get('/follow/:user_id', async (req, res) => {
+
+    if (req.session.user) {
+
+        try {
+
+            const following = req.session.user;
+            const followed = await User.findOne({_id: req.params.user_id});
+
+            if (followed) {
+
+                const existingFollow = await Follow.findOne({following: following._id, followed: followed._id});
+
+                if (existingFollow) {
+                    await Follow.deleteOne(existingFollow);
+                }
+
+                else { 
+                    const newFollow = new Follow({
+                        following: following,
+                        followed: followed
+                    });
+
+                    await newFollow.save();
+                }
+            }
+
+            res.redirect(`/u/${followed.username}`);
+        }
+
+        catch(error) {
+
+            console.log(error);
+            res.status(500).send('Internal Server Error.');
+        }
+    }
+
+    else {
+        res.redirect('/login');
+    }
+});
 
 app.post('/make-post', upload.array('images'), async (req, res) => {
 
@@ -356,15 +408,15 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
         author: req.session.user,
       });
   
-      await newStory.save();
-      res.redirect('/');
+      const savedStory = await newStory.save();
+      res.redirect(`/story/${savedStory._id}`);
   
     } catch (error) {
       console.error(error);
       res.status(500).send('Error saving the story.');
     }
   });
-  
+
 app.get('/:username/edit', (req, res) => {
 
     if (req.session.user.username != req.params.username) {
