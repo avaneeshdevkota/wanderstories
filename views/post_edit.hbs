@@ -1,0 +1,7 @@
+<form method="post" action="" enctype="multipart/form-data">
+    <input type="text" name="title" placeholder="title" value="{{story.title}}" required>
+    <textarea name="content" placeholder="Write your story!"required>{{story.content}}</textarea>
+    <input type="file" name="images" multiple="multiple">
+    <input type="text" name="location" value="{{story.location}}" placeholder="Where?">
+    <input type="submit" value="Post">
+</form>

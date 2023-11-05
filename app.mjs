@@ -183,6 +183,75 @@ app.get('/make-post', (req, res) => {
     res.render('post');
 })
 
+app.get('/edit/:story_id', async (req, res) => {
+
+    try {
+        const foundStory = await Story.findOne({_id: req.params.story_id});
+
+        if (foundStory && foundStory.author == req.session.user._id) {
+            res.render('post_edit', {story: foundStory});
+        } 
+    }
+
+    catch {
+        res.status(500).send('Internal Server Error.');
+    }
+})
+
+
+app.get('/delete/:story_id', async (req, res) => {
+
+    try {
+
+        const foundStory = await Story.findOne({_id: req.params.story_id});
+
+        if (foundStory && foundStory.author == req.session.user._id) {
+            await Story.deleteOne({_id: req.params.story_id});
+        }
+
+        res.redirect('/');
+    }
+
+    catch {
+        res.status(500).send('Internal Server Error');
+    }
+
+})
+
+app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
+
+    try {
+
+        const foundStory = await Story.findOne({_id: req.params.story_id});
+        const uploadedFiles = req.files;
+
+        if (foundStory && foundStory.author == req.session.user._id) {
+
+            let imageUrls = foundStory.images;
+
+            if (uploadedFiles.length) {
+                imageUrls = uploadedFiles.map(file => file.path);
+            }
+
+            const updatedDetails = {
+                title: req.body.title,
+                content: req.body.content,
+                images: imageUrls,
+                location: req.body.location,
+                author: req.session.user
+            }
+
+            await Story.findOneAndUpdate({_id: req.params.story_id}, updatedDetails);
+            res.redirect(`/story/${req.params.story_id}`)
+        } 
+    }
+
+    catch(error) {
+        console.log(error);
+        res.status(500).send('Internal Server Error.');
+    }
+})
+
 app.post('/make-post', upload.array('images'), async (req, res) => {
 
     const uploadedFiles = req.files;
