@@ -44,13 +44,27 @@ const sessionOptions = {
 app.use(session(sessionOptions));
 
 app.set('view engine', 'hbs');
+
 app.use(express.urlencoded({extended : false}));
 
 const User = mongoose.model('User');
 const Story = mongoose.model('Story');
 
-app.get('/', (req, res) => {
-    res.render('index', {user : req.session.user});
+app.get('/', async (req, res) => {
+
+    if (req.session.user) {
+
+        const user = await User.findOne({_id: req.session.user._id});
+        const bookmarked_ids = user.bookmarks;
+        const bookmarked_posts = await Story.find({_id: {$in: bookmarked_ids}});
+
+        res.render('index', {user: user, bookmarks: bookmarked_posts});
+    }
+
+    else {
+
+        res.redirect('/login');
+    }
 })
 
 app.get('/register', (req, res) => {
@@ -148,19 +162,31 @@ app.get('/u/:username', async (req, res) => {
 
 app.get('/story/:storyID', async (req, res) => {
 
-    try {
-        const story = await Story.findOne({_id : req.params.storyID});
-        if (story) {
-            res.render('story', {story: story, own: req.session.user._id == story.author});
+    if (req.session.user) {
+
+        const user = await User.findOne({_id: req.session.user._id});
+
+        try {
+            const story = await Story.findOne({_id : req.params.storyID});
+
+            if (story) {
+
+                res.render('story', {story: story, 
+                                    own: user._id == story.author, 
+                                    user: user,
+                                    liked: story.likes.includes(user._id),
+                                    bookmarked: user.bookmarks.includes(req.params.storyID)
+                });
+            }
+
+            else {
+                res.send("Oops! Can't find that story.");
+            }
         }
 
-        else {
-            res.send("Oops! Can't find that story.");
+        catch {
+            res.status(500).send('Internal Server Error.');
         }
-    }
-
-    catch {
-        res.status(500).send('Internal Server Error.');
     }
 });
 
@@ -249,6 +275,66 @@ app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
     catch(error) {
         console.log(error);
         res.status(500).send('Internal Server Error.');
+    }
+})
+
+app.get('/like/:story_id', async (req, res) => {
+
+    if (req.session.user) {
+
+        try {
+            const foundStory = await Story.findOne({_id: req.params.story_id});
+
+            if (foundStory) {
+
+                console.log(foundStory.likes, req.session.user._id);
+
+                if (foundStory.likes.includes(req.session.user._id)) {
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {likes: req.session.user._id}});
+                }
+
+                else {
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {likes: req.session.user}})
+                }
+
+                res.redirect(`/story/${req.params.story_id}`)
+            }
+        }
+
+        catch(error) {
+            console.log(error);
+            res.status(500).send('Internal Server Error');
+        }
+    }
+});
+
+app.get('/bookmark/:story_id', async (req, res) => {
+
+    if (req.session.user) {
+
+        try {
+
+            const user = await User.findOne({_id: req.session.user._id});
+            const foundStory = await Story.findOne({_id: req.params.story_id});
+
+            if (foundStory) {
+
+                if (user.bookmarks.includes(foundStory._id)) {
+                    const updatedUser = await User.findOneAndUpdate({_id: user._id}, {$pull: {bookmarks: foundStory._id}});
+                }
+
+                else {
+                    const updatedUser = await User.findOneAndUpdate({_id: user._id}, {$push: {bookmarks: foundStory}});
+                }
+
+                res.redirect(`/story/${req.params.story_id}`)
+            }
+        }
+
+        catch(error) {
+            console.log(error);
+            res.status(500).send('Internal Server Error');
+        }
     }
 })
 
