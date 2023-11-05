@@ -1,0 +1,14 @@
+{{#if own}}
+    <a href="/logout">Logout</a>
+    <a href="/{{user.username}}/edit">Edit Profile</a>
+{{/if}}
+
+{{#each stories}}
+    <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+        title: {{this.title}}
+        location: {{this.location}}
+        posted on: {{this.timestamp}}
+        likes: {{this.likes.length}}
+    </div>
+{{/each}}
+

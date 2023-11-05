@@ -28,7 +28,9 @@ const User = mongoose.model('User', userSchema);
 const commentSchema = new mongoose.Schema({
 
   // User who made the comment, referencing the User entity
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+
+  username : {type: String},
 
   // The textual content of the comment
   body: String,
