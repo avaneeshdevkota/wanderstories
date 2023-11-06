@@ -14,7 +14,31 @@
 
 {{#if posts.length}}
     <h1>Stories</h1>
-    {{#each posts}}
+    {{#each titles}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{/if}} 
+
+{{#if contents.length}}
+    <h1>Contents</h1>
+    {{#each titles}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{/if}} 
+
+{{#if location.length}}
+    <h1>Location</h1>
+    {{#each titles}}
         <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
             title: {{this.title}}
             location: {{this.location}}

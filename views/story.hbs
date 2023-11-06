@@ -1,7 +1,10 @@
 {{#if own}}
+
     <a href="/edit/{{story._id}}">Edit Story</a>
     <a href="/delete/{{story._id}}">Delete Story</a>
+
 {{else}}
+
     {{#if liked}}
         <a href="/like/{{story._id}}">Unlike Story</a>
     {{else}}
@@ -17,6 +20,11 @@
 
 <div>
     title: {{story.title}}
+    {{#if poster}}
+        author: {{story.author}}
+    {{else}}
+        author: [deleted-user]
+    {{/if}}
     location: {{story.location}}
     posted on: {{story.timestamp}}
     likes: {{story.likes.length}}

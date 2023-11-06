@@ -86,7 +86,7 @@ app.get('/discover', async (req, res) => {
 
     if (req.session.user) {
 
-        const recentPosts = (await Story.find({})).filter(story => story.author != req.session.user).sort({timestamp: -1});
+        const recentPosts = (await Story.find().sort({timestamp: -1})).filter(story => story.author != req.session.user._id);
         res.render('discover', {posts: recentPosts});
     }
 
@@ -116,7 +116,7 @@ app.get('/search', async (req, res) => {
 
         else {
             matching_users = (await User.find({})).filter(user => user._id != req.session.user._id);
-            matching_posts = (await Story.find({})).filter(post => post.author != req.session.user._id);
+            matching_posts = (await Story.find({}).sort({timestamp: -1})).filter(story => story.author != req.session.user._id);
         }
 
         res.render('search', {users: matching_users,
@@ -220,16 +220,16 @@ app.get('/logout', (req, res) => {
       });
 })
 
-app.get('/u/:username', async (req, res) => {
+app.get('/u/:userID', async (req, res) => {
 
     try {
 
-        const user = await User.findOne({username: req.params.username});
+        const user = await User.findOne({_id: req.params.userID});
         const posts = await Story.find({author: user});
         const following = await Follow.findOne({following: req.session.user._id, followed: user._id});
         
         res.render('profile', {stories: posts,
-                                own: req.session.user.username === req.params.username,
+                                own: req.session.user._id === req.params.userID,
                                 user: user,
                                 following: following ? true : false});
     }
@@ -246,11 +246,14 @@ app.get('/story/:storyID', async (req, res) => {
 
         try {
 
-            const story = await Story.findOne({_id : req.params.storyID});
+            const story = await Story.findOne({_id: req.params.storyID});
 
             if (story) {
 
-                res.render('story', {story: story, 
+                const poster = await User.findOne({_id: story.author});
+
+                res.render('story', {story: story,
+                                     poster: poster,
                                     own: req.session.user._id == story.author, 
                                     user: req.session.user,
                                     liked: story.likes.includes(req.session.user._id),
@@ -484,23 +487,23 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
     }
   });
 
-app.get('/:username/edit', (req, res) => {
+app.get('/:userID/edit', (req, res) => {
 
-    if (req.session.user.username != req.params.username) {
+    if (req.session.user._id != req.params.userID) {
         res.redirect('/');
     }
 
     res.render('profile_edit', {user: req.session.user});
 })
 
-app.post('/:username/edit', async (req, res) => {
+app.post('/:userID/edit', async (req, res) => {
 
     if (req.session.user.username == req.body.username) {
 
         if (req.session.user.bio != req.body.bio) {
 
-            await User.findOneAndUpdate({username: req.session.user.username}, {bio: req.body.bio});
-            req.session.user = await User.findOne({username: req.session.user.username});
+            await User.findOneAndUpdate({_id: req.session.user._id}, {bio: req.body.bio});
+            req.session.user = await User.findOne({_id: req.session.user._id});
         }
         
         res.redirect('/');
@@ -536,5 +539,22 @@ app.post('/:username/edit', async (req, res) => {
         }
     }
 });
+
+app.get('/:userID/delete', async (req, res) => {
+
+    if (req.session.user && req.session.user._id == req.params.userID) {
+
+        try {
+            await User.deleteOne({_id: req.session.user._id});
+            res.redirect('/logout');
+
+        }
+
+        catch(error) {
+            console.log(error);
+            res.status(500).send('Internal Server Error.');
+        }
+    }
+})
 
 app.listen(process.env.PORT ?? 3000);
