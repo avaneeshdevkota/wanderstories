@@ -1,0 +1,13 @@
+{{#if bookmarks.length}}
+    <h2>Bookmarked Posts</h2>
+    {{#each bookmarks}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{else}}
+    <h2>Bookmark posts to see them here.</h2>
+{{/if}}

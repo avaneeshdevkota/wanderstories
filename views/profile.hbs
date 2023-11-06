@@ -2,6 +2,8 @@
     <a href="/logout">Logout</a>
     <a href="/{{user.username}}/edit">Edit Profile</a>
     <a href="/{{user._id}}/delete">Delete Profile</a>
+    <a href="/bookmarked">Bookmarks</a>
+    <a href="/liked">Likes</a>
 {{else}}
     {{#if following}}
         <a href="/follow/{{user._id}}">Unfollow</a>

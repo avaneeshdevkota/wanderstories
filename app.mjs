@@ -55,12 +55,7 @@ app.get('/', async (req, res) => {
 
     if (req.session.user) {
 
-        const bookmarked_posts = await Story.find({bookmarks: req.session.user._id});
-        const liked_posts = await Story.find({likes: req.session.user._id});
-
-        res.render('index', {user: req.session.user, 
-                             bookmarks: bookmarked_posts,
-                             likes: liked_posts});
+        res.render('index', {user: req.session.user});
     }
     
     else {
@@ -133,6 +128,30 @@ app.get('/you', async (req, res) => {
 
     if (req.session.user) {
         res.redirect(`/u/${req.session.user.username}`)
+    }
+
+    else {
+        res.redirect('/');
+    }
+})
+
+app.get('/bookmarked', async (req, res) => {
+
+    if (req.session.user) {
+        const bookmarked_posts = await Story.find({bookmarks: req.session.user._id});
+        res.render('bookmarks', {bookmarks: bookmarked_posts});
+    }
+
+    else {
+        res.redirect('/');
+    }
+})
+
+app.get('/liked', async (req, res) => {
+
+    if (req.session.user) {
+        const liked_posts = await Story.find({likes: req.session.user._id});
+        res.render('likes', {likes: liked_posts});
     }
 
     else {

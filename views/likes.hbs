@@ -1,0 +1,13 @@
+{{#if likes.length}}
+    <h2>Liked Posts</h2>
+    {{#each likes}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{else}}
+    <h2>Like posts to see them here.</h2>
+{{/if}}
