@@ -58,18 +58,85 @@ app.get('/', async (req, res) => {
         const bookmarked_posts = await Story.find({bookmarks: req.session.user._id});
         const liked_posts = await Story.find({likes: req.session.user._id});
 
-        const following = (await Follow.find({following: req.session.user._id})).map(follow => follow.followed);
-        const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1});
-
         res.render('index', {user: req.session.user, 
                              bookmarks: bookmarked_posts,
-                             likes: liked_posts,
-                             following_posts: latestFollowingPosts});
+                             likes: liked_posts});
+    }
+    
+    else {
+        res.render('index');
+    }
+});
+
+app.get('/following', async (req, res) => {
+
+    if (req.session.user) {
+
+        const following = (await Follow.find({following: req.session.user._id})).map(follow => follow.followed);
+        const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1});
+        res.render('following', {posts: latestFollowingPosts});
     }
 
     else {
+        res.redirect('/');
+    }
+});
 
-        res.redirect('/login');
+app.get('/discover', async (req, res) => {
+
+    if (req.session.user) {
+
+        const recentPosts = (await Story.find({})).filter(story => story.author != req.session.user).sort({timestamp: -1});
+        res.render('discover', {posts: recentPosts});
+    }
+
+    else {
+        res.redirect('/');
+    }
+})
+
+app.get('/search', async (req, res) => {
+
+    if (req.session.user) {
+
+        let matching_users = [];
+        let matching_posts = [];
+
+        if (req.query.find && req.query.find != '') {
+
+            const search_query = new RegExp(req.query.find, 'i');
+
+            matching_users = await User.find({username: search_query});
+            matching_posts = await Story.find({$or: [
+                {title: search_query},
+                {location: search_query},
+                {content: search_query}
+            ]});
+        }
+
+        else {
+            matching_users = (await User.find({})).filter(user => user._id != req.session.user._id);
+            matching_posts = (await Story.find({})).filter(post => post.author != req.session.user._id);
+        }
+
+        res.render('search', {users: matching_users,
+                              posts: matching_posts
+                             });
+    }
+
+    else {
+        res.redirect('/');
+    }
+})
+
+app.get('/you', async (req, res) => {
+
+    if (req.session.user) {
+        res.redirect(`/u/${req.session.user.username}`)
+    }
+
+    else {
+        res.redirect('/');
     }
 })
 

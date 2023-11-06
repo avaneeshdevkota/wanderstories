@@ -1,0 +1,25 @@
+<form method="get" action="">
+    <input type="text" name="find" placeholder="I'm looking for ...">
+    <input type="submit" value="Search">
+</form>
+
+{{#if users.length}}
+    <h1>Users</h1>
+    {{#each users}}
+        <div>
+            <a href="/u/{{this.username}}">{{this.username}}</a>
+        </div>
+    {{/each}}
+{{/if}} 
+
+{{#if posts.length}}
+    <h1>Stories</h1>
+    {{#each posts}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{/if}} 

@@ -1,4 +1,12 @@
-<h2>This is Home Page!</h2>
+{{#if user}}
+    <nav>
+        <a href="/following">Following</a>
+        <a href="/discover">Discover</a>
+        <a href="/search">Search</a>
+        <a href="/you">You</a>
+    </nav>
+{{/if}}
+
 {{#if user}}
 
     <h1> Welcome {{user.username}} </h1>
@@ -22,18 +30,6 @@
     {{#if likes.length}}
         <h2>Liked Posts</h2>
         {{#each likes}}
-            <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
-                title: {{this.title}}
-                location: {{this.location}}
-                posted on: {{this.timestamp}}
-                likes: {{this.likes.length}}
-            </div>
-        {{/each}}
-    {{/if}}
-
-    {{#if following_posts.length}}
-        <h2>From People You Follow</h2>
-        {{#each following_posts}}
             <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
                 title: {{this.title}}
                 location: {{this.location}}

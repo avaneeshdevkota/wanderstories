@@ -1,0 +1,13 @@
+{{#if posts.length}}
+    <h2>From People You Follow</h2>
+    {{#each posts}}
+        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
+            title: {{this.title}}
+            location: {{this.location}}
+            posted on: {{this.timestamp}}
+            likes: {{this.likes.length}}
+        </div>
+    {{/each}}
+{{else}}
+    <h2> Nothing to see here! Follow more people to see their posts here! </h2>  
+{{/if}}
