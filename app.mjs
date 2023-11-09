@@ -201,7 +201,7 @@ app.post("/login", passport.authenticate("local", {
 });
 
 app.get('/logout', (req, res) => {
-    
+
     req.logout((err) => {
         if (err) {
             return next(err);
@@ -278,7 +278,13 @@ app.post('/story/:storyID', async (req, res) => {
 })
 
 app.get('/make-post', (req, res) => {
-    res.render('post');
+    
+    if (req.isAuthenticated()) {
+        res.render('post');
+    }
+    else {
+        res.redirect('/');
+    }
 })
 
 app.get('/edit/:story_id', async (req, res) => {
