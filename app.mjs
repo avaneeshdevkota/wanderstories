@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import path from 'path'
 import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync } from "fs";
+import passport from "passport";
+import { Strategy as LocalStrategy } from 'passport-local';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -14,6 +16,10 @@ const __dirname = path.dirname(__filename);
 
 const storageDirectory = './images'; // Specify the destination directory
 const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
+
+const User = mongoose.model('User');
+const Story = mongoose.model('Story');
+const Follow = mongoose.model('Follow');
 
 // Ensure the destination directory exists or create it if necessary
 
@@ -35,29 +41,29 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-const sessionOptions = { 
-	secret: 'secretCode', 
-	saveUninitialized: false, 
-	resave: false 
-};
-
-app.use(session(sessionOptions));
-
 app.set('view engine', 'hbs');
-
 app.use(express.urlencoded({extended : false}));
+app.use('/:imageID', express.static(path.resolve(__dirname, 'images')));
 
-const User = mongoose.model('User');
-const Story = mongoose.model('Story');
-const Follow = mongoose.model('Follow');
+app.use(session({
+
+    secret: process.env.SECRET,
+    resave: false,
+    saveUninitialized: false,
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
 
 app.get('/', async (req, res) => {
 
-    if (req.session.user) {
-
-        res.render('index', {user: req.session.user});
+    if (req.isAuthenticated()) {
+        res.render('index', {user: req.user});
     }
-    
+
     else {
         res.render('index');
     }
@@ -65,9 +71,9 @@ app.get('/', async (req, res) => {
 
 app.get('/following', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
-        const following = (await Follow.find({following: req.session.user._id})).map(follow => follow.followed);
+        const following = (await Follow.find({following: req.user._id})).map(follow => follow.followed);
         const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1});
         res.render('following', {posts: latestFollowingPosts});
     }
@@ -79,9 +85,9 @@ app.get('/following', async (req, res) => {
 
 app.get('/discover', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
-        const recentPosts = (await Story.find().sort({timestamp: -1})).filter(story => story.author != req.session.user._id);
+        const recentPosts = (await Story.find().sort({timestamp: -1})).filter(story => story.author != req.user._id);
         res.render('discover', {posts: recentPosts});
     }
 
@@ -92,7 +98,7 @@ app.get('/discover', async (req, res) => {
 
 app.get('/search', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
         let matching_users = [];
         let matching_posts = [];
@@ -110,8 +116,8 @@ app.get('/search', async (req, res) => {
         }
 
         else {
-            matching_users = (await User.find({})).filter(user => user._id != req.session.user._id);
-            matching_posts = (await Story.find({}).sort({timestamp: -1})).filter(story => story.author != req.session.user._id);
+            matching_users = (await User.find({})).filter(user => {user._id != req.user._id});
+            matching_posts = (await Story.find({}).sort({timestamp: -1})).filter(story => {story.author != req.user._id});
         }
 
         res.render('search', {users: matching_users,
@@ -126,8 +132,8 @@ app.get('/search', async (req, res) => {
 
 app.get('/you', async (req, res) => {
 
-    if (req.session.user) {
-        res.redirect(`/u/${req.session.user.username}`)
+    if (req.isAuthenticated()) {
+        res.redirect(`/u/${req.user._id}`)
     }
 
     else {
@@ -137,8 +143,8 @@ app.get('/you', async (req, res) => {
 
 app.get('/bookmarked', async (req, res) => {
 
-    if (req.session.user) {
-        const bookmarked_posts = await Story.find({bookmarks: req.session.user._id});
+    if (req.isAuthenticated()) {
+        const bookmarked_posts = await Story.find({bookmarks: req.user._id});
         res.render('bookmarks', {bookmarks: bookmarked_posts});
     }
 
@@ -149,8 +155,8 @@ app.get('/bookmarked', async (req, res) => {
 
 app.get('/liked', async (req, res) => {
 
-    if (req.session.user) {
-        const liked_posts = await Story.find({likes: req.session.user._id});
+    if (req.isAuthenticated()) {
+        const liked_posts = await Story.find({likes: req.user._id});
         res.render('likes', {likes: liked_posts});
     }
 
@@ -163,81 +169,46 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post('/register', async (req, res) => {
+app.post("/register", function(req, res){
 
-    const foundUser = await User.findOne({username: req.body.username});
+    User.register(new User({username: req.body.username,
+                            bio: '',
+                            stories: [],
+                            following: [],
+                            bookmarks: []
+                        }), req.body.password, function(err, user){
+        if(err) {
+            console.log(err);
+            res.redirect('/register');
+        }
 
-    if (foundUser) {   
-        res.render('register', {error: 'Username already taken.'});
-    }
-
-    if (req.body.pw != req.body.pwc) {
-        res.render('register', {error: 'Passwords do not match.'});
-    }
- 
-    try {
-        const newUser = new User({
-            username: req.body.username,
-            hash: req.body.pw,
-            bio: '',
-            stories: [],
-            following: [],
-            bookmarks: []
+        passport.authenticate("local")(req, res, function(){
+            res.redirect("/");
         });
-
-        await newUser.save();
-        req.session.user = newUser;
-        res.redirect('/')
-    }
-
-    catch(e) {
-        res.render('register', {error : e});
-    }
+    });
 });
 
 app.get('/login', (req, res) => {
     res.render('login');
 });
 
-app.post('/login', async (req, res) => {
+app.post("/login", passport.authenticate("local", {
 
-    try {
-
-        const foundUser = await User.findOne({username: req.body.username});
-
-        if (foundUser) {
-
-            if (foundUser.hash == req.body.pw) {
-                req.session.user = foundUser;
-                res.redirect('/')
-            }
-
-            else {
-                res.render('login', {error : "Incorrect Password"});
-            }
-        }
-
-        else {
-            res.render('login', {error : "User doesn't exist."})
-        }
-    }
-
-    catch(e) {
-        res.status(500).send("Internal Server Error");
-    }
+    successRedirect: "/",
+    failureRedirect: "/login"
+}), function(req, res){
+    
 });
 
 app.get('/logout', (req, res) => {
-
-    req.session.destroy((err) => {
-
+    
+    req.logout((err) => {
         if (err) {
-          console.error('Error destroying session:', err);
+            return next(err);
         }
-
         res.redirect('/');
-      });
-})
+    });
+});
 
 app.get('/u/:userID', async (req, res) => {
 
@@ -245,10 +216,10 @@ app.get('/u/:userID', async (req, res) => {
 
         const user = await User.findOne({_id: req.params.userID});
         const posts = await Story.find({author: user});
-        const following = await Follow.findOne({following: req.session.user._id, followed: user._id});
+        const following = await Follow.findOne({following: req.user._id, followed: user._id});
         
         res.render('profile', {stories: posts,
-                                own: req.session.user._id === req.params.userID,
+                                own: req.user._id.equals(req.params.userID),
                                 user: user,
                                 following: following ? true : false});
     }
@@ -261,7 +232,7 @@ app.get('/u/:userID', async (req, res) => {
 
 app.get('/story/:storyID', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
         try {
 
@@ -273,10 +244,10 @@ app.get('/story/:storyID', async (req, res) => {
 
                 res.render('story', {story: story,
                                      poster: poster,
-                                    own: req.session.user._id == story.author, 
-                                    user: req.session.user,
-                                    liked: story.likes.includes(req.session.user._id),
-                                    bookmarked: story.bookmarks.includes(req.session.user._id)
+                                     own: req.user._id.equals(story.author),
+                                    user: req.user,
+                                    liked: story.likes.includes(req.user._id),
+                                    bookmarked: story.bookmarks.includes(req.user._id)
                 });
             }
 
@@ -296,7 +267,7 @@ app.get('/story/:storyID', async (req, res) => {
 app.post('/story/:storyID', async (req, res) => {
 
     try {
-        const newComment = {user: req.session.user, username: req.session.user.username, body: req.body.comment}
+        const newComment = {user: req.user, username: req.user.username, body: req.body.comment}
         const updatedStory = await Story.findOneAndUpdate({_id: req.params.storyID}, {$push: {comments: newComment}})
         res.redirect(req.path);
     }
@@ -305,8 +276,6 @@ app.post('/story/:storyID', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 })
-
-app.use('/:imageID', express.static(path.resolve(__dirname, 'images')));
 
 app.get('/make-post', (req, res) => {
     res.render('post');
@@ -317,7 +286,7 @@ app.get('/edit/:story_id', async (req, res) => {
     try {
         const foundStory = await Story.findOne({_id: req.params.story_id});
 
-        if (foundStory && foundStory.author == req.session.user._id) {
+        if (foundStory && req.user._id.equals(foundStory.author)) {
             res.render('post_edit', {story: foundStory});
         } 
     }
@@ -334,7 +303,7 @@ app.get('/delete/:story_id', async (req, res) => {
 
         const foundStory = await Story.findOne({_id: req.params.story_id});
 
-        if (foundStory && foundStory.author == req.session.user._id) {
+        if (foundStory && req.user._id.equals(foundStory.author)) {
             await Story.deleteOne({_id: req.params.story_id});
         }
 
@@ -354,7 +323,7 @@ app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
         const foundStory = await Story.findOne({_id: req.params.story_id});
         const uploadedFiles = req.files;
 
-        if (foundStory && foundStory.author == req.session.user._id) {
+        if (foundStory && req.user._id.equals(foundStory.author)) {
 
             let imageUrls = foundStory.images;
 
@@ -367,7 +336,7 @@ app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
                 content: req.body.content,
                 images: imageUrls,
                 location: req.body.location,
-                author: req.session.user
+                author: req.user
             }
 
             await Story.findOneAndUpdate({_id: req.params.story_id}, updatedDetails);
@@ -383,19 +352,19 @@ app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
 
 app.get('/like/:story_id', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
         try {
             const foundStory = await Story.findOne({_id: req.params.story_id});
 
             if (foundStory) {
 
-                if (foundStory.likes.includes(req.session.user._id)) {
-                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {likes: req.session.user._id}});
+                if (foundStory.likes.includes(req.user._id)) {
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {likes: req.user._id}});
                 }
 
                 else {
-                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {likes: req.session.user}})
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {likes: req.user}})
                 }
 
                 res.redirect(`/story/${req.params.story_id}`)
@@ -411,19 +380,19 @@ app.get('/like/:story_id', async (req, res) => {
 
 app.get('/bookmark/:story_id', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
         try {
             const foundStory = await Story.findOne({_id: req.params.story_id});
 
             if (foundStory) {
 
-                if (foundStory.bookmarks.includes(req.session.user._id)) {
-                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {bookmarks: req.session.user._id}});
+                if (foundStory.bookmarks.includes(req.user._id)) {
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$pull: {bookmarks: req.user._id}});
                 }
 
                 else {
-                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {bookmarks: req.session.user}})
+                    await Story.findOneAndUpdate({_id: req.params.story_id}, {$push: {bookmarks: req.user}})
                 }
 
                 res.redirect(`/story/${req.params.story_id}`)
@@ -439,11 +408,11 @@ app.get('/bookmark/:story_id', async (req, res) => {
 
 app.get('/follow/:user_id', async (req, res) => {
 
-    if (req.session.user) {
+    if (req.isAuthenticated()) {
 
         try {
 
-            const following = req.session.user;
+            const following = req.user;
             const followed = await User.findOne({_id: req.params.user_id});
 
             if (followed) {
@@ -494,7 +463,7 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
         content: req.body.content, // Assuming you have a content field in your form
         images: imageUrls, // Store the URLs to the images as an array
         location: req.body.location, // Assuming you have a location field in your form
-        author: req.session.user,
+        author: req.user,
       });
   
       const savedStory = await newStory.save();
@@ -508,63 +477,33 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
 
 app.get('/:userID/edit', (req, res) => {
 
-    if (req.session.user._id != req.params.userID) {
+    if (req.user._id != req.params.userID) {
         res.redirect('/');
     }
 
-    res.render('profile_edit', {user: req.session.user});
+    res.render('profile_edit', {user: req.user});
 })
 
 app.post('/:userID/edit', async (req, res) => {
 
-    if (req.session.user.username == req.body.username) {
+    if (req.user.username.equals(req.body.username)) {
 
-        if (req.session.user.bio != req.body.bio) {
+        if (!req.user.bio.equals(req.body.bio)) {
 
-            await User.findOneAndUpdate({_id: req.session.user._id}, {bio: req.body.bio});
-            req.session.user = await User.findOne({_id: req.session.user._id});
+            await User.findOneAndUpdate({_id: req.user._id}, {bio: req.body.bio});
+            req.user = await User.findOne({_id: req.user._id});
         }
         
         res.redirect('/');
-    }
-
-    else {
-
-        const foundUser = await User.findOne({username: req.body.username});
-
-        if (foundUser) {
-            res.render('profile_edit', {error: 'Username already taken.'});
-        }
-
-        else {
-
-            if (req.body.pw) {
-
-                if (req.session.user.hash == req.body.pw) {
-
-                    await User.findOneAndUpdate({username: req.session.user.username}, {username: req.body.username});
-                    req.session.user = await User.findOne({username: req.body.username});
-                    res.redirect('/');
-                }
-
-                else {
-                    res.render('profile_edit', {error: 'Incorrect Password.'});
-                }
-            }
-
-            else {
-                res.render('profile_edit', {error: 'Enter your password to change username.'});
-            }
-        }
     }
 });
 
 app.get('/:userID/delete', async (req, res) => {
 
-    if (req.session.user && req.session.user._id == req.params.userID) {
-
+    if (req.isAuthenticated()) {
+        
         try {
-            await User.deleteOne({_id: req.session.user._id});
+            await User.deleteOne({_id: req.user._id});
             res.redirect('/logout');
 
         }

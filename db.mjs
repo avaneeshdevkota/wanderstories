@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
+import passportLocalMongoose from "passport-local-mongoose"
 
 mongoose.connect(process.env.DSN);
 
@@ -7,17 +8,17 @@ const userSchema = new mongoose.Schema({
   // Unique username for the user, used for authentication
   username: { type: String, required: true, unique: true },
 
-  // Password hash for secure user authentication
-  hash: { type: String, required: true },
-
   // Bio to display on user profile
   bio: { type: String, required: false},
   
   // List of users that the current user is following
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  stories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }],
+  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }]
 
 });
 
+userSchema.plugin(passportLocalMongoose); 
 const User = mongoose.model('User', userSchema);
 
 const commentSchema = new mongoose.Schema({
@@ -32,6 +33,7 @@ const commentSchema = new mongoose.Schema({
 
   // Timestamp indicating when the comment was made (default: current date and time)
   timestamp: { type: Date, default: Date.now }
+
 });
 
 const storySchema = new mongoose.Schema({
