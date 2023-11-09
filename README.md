@@ -90,10 +90,11 @@ WanderStories's data model revolves around two central entities: Users and Stori
 
 Certainly, here's the information presented in the requested format:
 
-**React.js**
-- __What is it?__ React.js is a JavaScript library for building user interfaces. It allows you to create reusable UI components, making it easier to manage complex UIs.
-- __Why use it?__ I want to use React.js for my web app's frontend to create a responsive, dynamic, and efficient user interface. It simplifies UI development and promotes a component-based architecture.
-- __List of possible candidate modules or solutions:__ Redux, React Router, Axios, Redux-Saga.
+**Passport.js**
+
+- __What is it?__ Passport.js is a robust authentication middleware for Node.js applications. It simplifies the process of handling user authentication, supporting various authentication strategies such as username/password, social media logins, and more.
+- __Why use it?__ Passport.js streamlines the implementation of authentication in the application, providing a modular and flexible framework. It ensures a secure and seamless user experience, allowing us to focus on building features rather than dealing with intricate authentication details.
+- __List of possible candidate modules or solutions:__ Passport.js itself, along with various authentication strategies like Local, OAuth, OpenID, and more. Additionally, we can explore Passport.js plugins for specific authentication providers.
 - __Points for research topic:__ 5 points
 
 **React-Markdown or Draft.js**
