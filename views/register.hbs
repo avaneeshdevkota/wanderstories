@@ -1,10 +1,27 @@
-{{#if error}}
-    {{error}}
-{{/if}}
+<div class="flex h-[calc(100vh-10rem)]">
+    <div class="w-1/2">
+        <img src="/images/register.jpg" class="object-cover object-center w-full h-full">
+    </div>
 
-<form method = "post" action = "">
-    <input type = "text" name = "username" placeholder = "Username" required> 
-    <input type = "password" name = "password" placeholder = "Password" required>
-    <input type = "password" name = "pwc" placeholder = "Confirm Password" required>
-    <input type = "submit" value = "Register">
-</form>
+    <div class="w-1/2 md:w-1/2 p-8 flex flex-col items-center justify-center bg-white">
+
+        <h1 class="text-[3rem] font-head font-bold mb-[2rem]">Register</h1>
+
+        {{#if error}}
+            <div class="bg-red-500 text-white p-4 mb-4 font-body font-bold">
+                {{error}}
+            </div>
+        {{/if}}
+        
+        <form method="post" action="" class="flex flex-col justify-center items-center gap-[0.75rem] mx-auto w-[75%] bg-white p-[1rem] rounded">
+            <input type="text" name="username" placeholder="Username" required
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
+            <input type="password" name="password" placeholder="Password" required
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
+            <input type="password" name="pwc" placeholder="Confirm Password" required
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
+            <input type="submit" value="Register" class="mt-[1rem] w-[50%] px-4 py-2 text-white bg-primary-400 cursor-pointer rounded-md font-body">
+        <p class="mt-[2rem] text-center font-body">Already have an account? <a href="/login" class="text-primary-300 hover:underline font-bold">Log In!</a></p>
+    </form>
+    </div>
+</div>

@@ -14,7 +14,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const storageDirectory = './images'; // Specify the destination directory
+const storageDirectory = './public/images'; // Specify the destination directory
 const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
 
 const User = mongoose.model('User');
@@ -43,7 +43,8 @@ const upload = multer({ storage: storage });
 
 app.set('view engine', 'hbs');
 app.use(express.urlencoded({extended : false}));
-app.use('/:imageID', express.static(path.resolve(__dirname, 'images')));
+
+app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.use(session({
 
@@ -169,36 +170,59 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post("/register", function(req, res){
+app.post("/register", async (req, res) => {
 
-    User.register(new User({username: req.body.username,
-                            bio: '',
-                            stories: [],
-                            following: [],
-                            bookmarks: []
-                        }), req.body.password, function(err, user){
-        if(err) {
-            console.log(err);
-            res.redirect('/register');
+    if (req.body.password !== req.body.pwc) {
+        res.render('register', {error : "Passwords do not match."});
+    }
+
+    else {
+        
+        const search_query = new RegExp(`^${req.body.username}$`, 'i');
+        const foundUser = await User.findOne({username: search_query});
+
+        if (foundUser) {
+            res.render('register', {error : "User already exists."});
         }
 
-        passport.authenticate("local")(req, res, function(){
-            res.redirect("/");
-        });
-    });
+        else {
+
+            User.register(new User({username: req.body.username,
+                                    bio: '',
+                                    stories: [],
+                                    following: [],
+                                    bookmarks: []
+                                }), req.body.password, function(err, user) {
+                if(err) {
+                    console.log(err);
+                    res.redirect('/register');
+                }
+
+                passport.authenticate("local")(req, res, function(){
+                    res.redirect("/");
+                });
+            });
+        }
+    }
 });
 
 app.get('/login', (req, res) => {
     res.render('login');
 });
 
-app.post("/login", passport.authenticate("local", {
+app.post('/login', function(req, res, next) {
 
-    successRedirect: "/",
-    failureRedirect: "/login"
-}), function(req, res){
-    
-});
+    passport.authenticate('local', function(err, user, info) {
+      if (err) { return next(err) }
+      if (!user) {
+        return res.render('login', { error : info.message + '.' })
+      }
+      req.login(user, function(err) {
+        if (err) { return next(err); }
+        return res.redirect('/');
+      });
+    })(req, res, next);
+  });
 
 app.get('/logout', (req, res) => {
 
