@@ -14,7 +14,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const storageDirectory = './public/images'; // Specify the destination directory
+const storageDirectory = './public/uploads'; // Specify the destination directory
 const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
 
 const User = mongoose.model('User');
@@ -42,8 +42,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 app.set('view engine', 'hbs');
-app.use(express.urlencoded({extended : false}));
 
+app.use(express.urlencoded({extended : false}));
 app.use(express.static(path.resolve(__dirname, 'public')));
 
 app.use(session({
@@ -62,7 +62,10 @@ passport.deserializeUser(User.deserializeUser());
 app.get('/', async (req, res) => {
 
     if (req.isAuthenticated()) {
-        res.render('index', {user: req.user});
+
+        const recentPosts = (await Story.find().sort({timestamp: -1}).populate('author')).filter(story => story.author != req.user._id);
+
+        res.render('index', {user: req.user, posts: recentPosts});
     }
 
     else {
@@ -83,19 +86,6 @@ app.get('/following', async (req, res) => {
         res.redirect('/');
     }
 });
-
-app.get('/discover', async (req, res) => {
-
-    if (req.isAuthenticated()) {
-
-        const recentPosts = (await Story.find().sort({timestamp: -1})).filter(story => story.author != req.user._id);
-        res.render('discover', {posts: recentPosts});
-    }
-
-    else {
-        res.redirect('/');
-    }
-})
 
 app.get('/search', async (req, res) => {
 
@@ -217,6 +207,7 @@ app.post('/login', function(req, res, next) {
       if (!user) {
         return res.render('login', { error : info.message + '.' })
       }
+
       req.login(user, function(err) {
         if (err) { return next(err); }
         return res.redirect('/');
@@ -479,12 +470,13 @@ app.get('/follow/:user_id', async (req, res) => {
 });
 
 app.post('/make-post', upload.array('images'), async (req, res) => {
-
+    
     const uploadedFiles = req.files;
 
     try { 
       // Save the image file URLs to an array
-      const imageUrls = uploadedFiles.map(file => file.path);
+
+      const imageUrls = uploadedFiles.map(file => `/uploads/${file.filename}`);
   
       // Create a new story document with the image URLs
       const newStory = new Story({
@@ -505,16 +497,14 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
     }
   });
 
-app.get('/:userID/edit', (req, res) => {
+app.get('/edit', (req, res) => {
 
-    if (req.user._id != req.params.userID) {
-        res.redirect('/');
+    if (req.isAuthenticated()) {
+        res.render('profile_edit', {user: req.user});
     }
-
-    res.render('profile_edit', {user: req.user});
 })
 
-app.post('/:userID/edit', async (req, res) => {
+app.post('/edit', async (req, res) => {
 
     if (req.user.username.equals(req.body.username)) {
 
@@ -528,7 +518,7 @@ app.post('/:userID/edit', async (req, res) => {
     }
 });
 
-app.get('/:userID/delete', async (req, res) => {
+app.get('/delete', async (req, res) => {
 
     if (req.isAuthenticated()) {
         

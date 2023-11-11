@@ -1,47 +1,79 @@
-{{#if own}}
+<div class="p-4 rounded-lg mt-[2rem] mx-[15rem]">
 
-    <a href="/edit/{{story._id}}">Edit Story</a>
-    <a href="/delete/{{story._id}}">Delete Story</a>
+    {{#if story.images.length}}
 
-{{else}}
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-[2rem]">
+            {{#each story.images}}
+                <div class="relative aspect-w-4 aspect-h-3 flex items-center">
+                    <img src="{{this}}" alt="Image" class="object-cover rounded-lg">
+                </div>
+            {{/each}}
+        </div>
 
-    {{#if liked}}
-        <a href="/like/{{story._id}}">Unlike Story</a>
-    {{else}}
-        <a href="/like/{{story._id}}">Like Story</a>
     {{/if}}
 
-    {{#if bookmarked}}
-        <a href="/bookmark/{{story._id}}">Unbookmark Story</a>
-    {{else}}
-        <a href="/bookmark/{{story._id}}">Bookmark Story</a>
-    {{/if}}
-{{/if}}
+    <h2 class="text-[5rem] font-bold font-head">{{story.title}}</h2>
 
-<div>
-    title: {{story.title}}
-    {{#if poster}}
-        author: {{story.author}}
-    {{else}}
-        author: [deleted-user]
+    <div class="mt-[1rem]">
+
+        <div class = "flex flex-row space-x-4">
+            <img class="h-[20px] w-[20px]" src="/images/user.svg">
+            <a href="/u/{{poster._id}}" class="text-primary-200 font-body font-bold">{{poster.username}}
+        </div>
+
+        <div class="flex flex-row space-x-4">
+            <img class="h-[20px] w-[20px]" src="/images/location.svg">
+            <a href="https://maps.google.com/?q={{story.location}}" class="text-primary-200 font-body font-bold">{{story.location}}</a>
+        </div>
+
+        <div class="flex flex-row space-x-4">
+            <img class="h-[20px] w-[20px]" src="/images/time.svg">
+            <p class="text-primary-200 font-body font-bold">{{story.timestamp}}</p>
+        </div>
+    </div>
+
+    {{#if own}}
+
+        <div class="space-x-4 mt-[1rem]">
+            <a href="/edit/{{story._id}}" class="font-body bg-primary-300 text-white rounded px-4 py-2 hover:bg-primary-400">Edit Story</a>
+            <a href="/delete/{{story._id}}" class="font-body bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600">Delete Story</a>
+        </div>
+
     {{/if}}
-    location: {{story.location}}
-    posted on: {{story.timestamp}}
-    likes: {{story.likes.length}}
-    content : {{story.content}}
-    {{#each story.images}}
-        {{this}}
-        <img src="/{{this}}">
-    {{/each}}
-    comments: 
-        {{#each story.comments}}  
-            user : {{this.username}} {{this.timestamp}} {{this.body}}
+
+    {{#unless own}}
+        <div class="space-x-4 mt-[1rem] flex flex-row space-x-4">
+            {{#if liked}}
+                <a href="/like/{{story._id}}"><img src="/images/liked.svg"></a>
+            {{else}}
+                <a href="/like/{{story._id}}"><img src="/images/not-liked.svg"></a>
+            {{/if}}
+
+            {{#if bookmarked}}
+                <a href="/bookmark/{{story._id}}"><img src="/images/bookmarked.svg"></a>
+            {{else}}
+                <a href="/bookmark/{{story._id}}"><img src="/images/not-bookmarked.svg"></a>
+            {{/if}}
+        </div>
+    {{/unless}}
+
+    <p class="text-gray-800 font-body mt-[1rem] text-[1rem]">{{story.content}}</p>
+
+    {{#if story.comments.length}}
+        <h3 class="text-lg font-semibold font-head mt-[1rem]">Comments</h3>
+        {{#each story.comments}}
+            <div class="mb-2">
+                <p class="text-primary-500">{{this.username}}</p>
+                <p class="text-gray-700">{{this.timestamp}}</p>
+                <p class="text-gray-800">{{this.body}}</p>
+            </div>
         {{/each}}
-</div>
+    {{/if}}
 
-{{#unless own}}
-    <form method="post" action="">
-        <textarea name="comment">Leave a Comment!</textarea>
-        <input type="submit" value="Submit">
-    </form>
-{{/unless}}
+    {{#unless own}}
+        <form method="post" action="" class="mb-4 mt-[1rem]">
+            <textarea name="comment" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Leave a Comment!"></textarea>
+            <button type="submit" class="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-600">Submit</button>
+        </form>
+    {{/unless}}
+</div>
