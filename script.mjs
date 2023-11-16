@@ -1,16 +1,11 @@
 import "./config.mjs";
-import "./db.mjs";
+import "./schemas.mjs";
 import mongoose from "mongoose";
 import {faker} from "@faker-js/faker";
 import axios from "axios";
+import { User, Story, Comment, Follow } from "./models.mjs";
 
 mongoose.connect(process.env.DSN);
-
-const User = mongoose.model('User');
-const Story = mongoose.model('Story');
-const Comment = mongoose.model('Comment');
-const Follow = mongoose.model('Follow');
-
 
 const dropCollection = async(model) => {
 

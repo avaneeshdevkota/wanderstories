@@ -14,20 +14,17 @@ WanderStories's data model revolves around two central entities: Users and Stori
 * Users can follow multiple other users.
 * Each story can be bookmarked, liked, or commented on by multiple users. 
 
-
 **An Example User**
 
 ```javascript
 {
   username: "based_traveller",
+  salt: "salt",
   hash: "hashed_password",
-  stories: ["story_id_1", "story_id_2", "story_id_3"], // array of references to Story documents
-  following: ["user_id_1", "user_id_2"] // array of references to users followed by the user
-  bookmarks: ["bookmark_id_1", "bookmark_id_2"] // array of references to bookmarked Story documents
 }
 ```
 
-**An Example Story with Embedded Comments**
+**An Example Story**
 
 ```javascript
 {
@@ -38,10 +35,27 @@ WanderStories's data model revolves around two central entities: Users and Stori
   created_at: "2023-10-15T08:30:00Z", //timestamp
   author: "based_traveller"
   likes: ["user_id_1", "user_id_1"] // array of references to users that have liked the story
-  comments: [ // array of comments left by other users on the post
-    {user_id: "user_id_1", comment_body: "Lovely post!"},
-    {user_id: "user_id_2", comment_body: "Low quality post."}
-  ]
+  bookmarks: ["user_id_1", "user_id_1"] // array of references to users that have bookmarked the story
+}
+```
+
+**An Example Comment**
+
+```javascript
+{
+  story: "story_id",
+  user: "user_id",
+  username: "based_traveller",
+  body: "Amazing post!"
+}
+```
+
+**An Example Follow**
+
+```javascript
+{
+  following: "user_id_1" // The person who is following
+  followed: "user_id_2" // The person being followed
 }
 ```
 
@@ -97,26 +111,47 @@ Certainly, here's the information presented in the requested format:
 - __List of possible candidate modules or solutions:__ Passport.js itself, along with various authentication strategies like Local, OAuth, OpenID, and more. Additionally, we can explore Passport.js plugins for specific authentication providers.
 - __Points for research topic:__ 5 points
 
-**React-Markdown or Draft.js**
-- __What is it?__ React-Markdown and Draft.js are libraries for enabling users to write formatted content. React-Markdown parses and displays Markdown content, while Draft.js provides a rich text editor.
-- __Why use it?__ These libraries enhance user interaction by allowing the creation of well-formatted travel stories and comments in your app.
-- __List of possible candidate modules or solutions:__ React-Markdown, Draft.js, Markdown editor plugins.
-- *Points for research topic:* 4 points
-
 **TailwindCSS**
+
 - __What is it?__ TailwindCSS is a utility-first CSS framework. It offers pre-defined CSS classes that make it easy to style your web app without writing custom CSS from scratch.
 - __Why use it?__ Use TailwindCSS to streamline and speed up the process of styling your web app. It promotes consistency in design and is highly customizable.
 - __List of possible candidate modules or solutions:__ CSS frameworks, like Bootstrap or Material-UI.
+- __Points for research topic:__ 2 points
+
+**Faker.js**
+
+- __What is it?__ Faker.js is a JavaScript library that allows you to generate fake data for various types, such as names, addresses, emails, and more. It's commonly used in web development and testing to create mock data for scenarios like prototyping, testing, and populating sample databases.
+
+- __Why use it?__ Utilize Faker.js to simulate diverse data sets during the development and testing phases. It's particularly useful for creating lifelike user profiles, generating random content, and ensuring your application handles a variety of data inputs effectively.
+
+- __Points for research topic:__ 2 points
+
+**Axios for Unsplash Images**
+
+- __What is it?__ Axios is a popular JavaScript library for making HTTP requests. I am utilizing Axios to fetch images from Unsplash for the data generated with Faker to populate the database.
+
+- __Why use it?__ Utilize Axios for seamless integration with the Unsplash API, making it easy to fetch and display images in your web application. Axios simplifies the process of handling HTTP requests, allowing you to efficiently retrieve and showcase Unsplash images within your project.
+
+- __Points for research topic:__ 1 point
+
+**CKEditor**
+
+- __What is it?__ CKEditor is a feature-rich WYSIWYG text editor that simplifies the process of adding and editing content on your website. It provides a user-friendly interface for content creation without the need for extensive HTML knowledge.
+
+- __Why use it?__ CKEditor enhances the content creation experience on your website, allowing users to format text, add images, and perform various editing tasks effortlessly. It is highly customizable, making it suitable for a wide range of applications.
+
+- __List of possible alternatives:__ Other rich text editors, like TinyMCE or Froala Editor, can be considered as alternatives to CKEditor. Each editor has its own set of features and customization options.
+
 - __Points for research topic:__ 1 point
 
 **dotenv**
+
 -__What is it?__ dotenv is a zero-dependency module in Node.js that loads environment variables from a .env file into process.env. It simplifies the management of sensitive information, such as API keys or configuration settings, in Node.js applications.
 
 -__Why use it?__ Use dotenv to securely store sensitive information and configuration settings outside of your codebase. It helps maintain a separation of concerns, ensuring that sensitive information is not hard-coded in your source code, which is crucial for security.
 
 Points for research topic: 1 point
 
-**Selenium**
 
 ## [Link to Initial Main Project File](app.mjs) 
 
