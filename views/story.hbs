@@ -1,16 +1,10 @@
+<nav class="flex items-center justify-center w-full bg-primary-400 py-4 text-[1.25rem]">
+    <a href="/following" class="text-white font-head font-bold mx-[3rem]">Following</a>
+    <a href="/search" class="text-white font-head font-bold mx-[3rem]">Search</a>
+    <a href="/you" class="text-white font-head font-bold mx-[3rem]">You</a>
+</nav>
+
 <div class="p-4 rounded-lg mt-[2rem] mx-[15rem]">
-
-    {{#if story.images.length}}
-
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-[2rem]">
-            {{#each story.images}}
-                <div class="relative aspect-w-4 aspect-h-3 flex items-center">
-                    <img src="{{this}}" alt="Image" class="object-cover rounded-lg">
-                </div>
-            {{/each}}
-        </div>
-
-    {{/if}}
 
     <h2 class="text-[5rem] font-bold font-head">{{story.title}}</h2>
 
@@ -34,7 +28,7 @@
 
     {{#if own}}
 
-        <div class="space-x-4 mt-[1rem]">
+        <div class="space-x-4 mt-[2rem]">
             <a href="/edit/{{story._id}}" class="font-body bg-primary-300 text-white rounded px-4 py-2 hover:bg-primary-400">Edit Story</a>
             <a href="/delete/{{story._id}}" class="font-body bg-red-500 text-white rounded px-4 py-2 hover:bg-red-600">Delete Story</a>
         </div>
@@ -42,7 +36,7 @@
     {{/if}}
 
     {{#unless own}}
-        <div class="space-x-4 mt-[1rem] flex flex-row space-x-4">
+        <div class="space-x-4 mt-[2rem] flex flex-row">
             {{#if liked}}
                 <a href="/like/{{story._id}}"><img src="/images/liked.svg"></a>
             {{else}}
@@ -57,23 +51,59 @@
         </div>
     {{/unless}}
 
-    <p class="text-gray-800 font-body mt-[1rem] text-[1rem]">{{story.content}}</p>
+    <hr class="mt-[2rem] mb-[2rem] bg-[#0a0a0a]">
 
-    {{#if story.comments.length}}
-        <h3 class="text-lg font-semibold font-head mt-[1rem]">Comments</h3>
-        {{#each story.comments}}
-            <div class="mb-2">
-                <p class="text-primary-500">{{this.username}}</p>
-                <p class="text-gray-700">{{this.timestamp}}</p>
-                <p class="text-gray-800">{{this.body}}</p>
-            </div>
+    {{#if story.images.length}}
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4 mb-[2rem]">
+            {{#each story.images}}
+                <div class="relative aspect-w-4 aspect-h-3 flex items-center">
+                    <img src="{{this}}" alt="Image" class="object-cover rounded-lg">
+                </div>
+            {{/each}}
+        </div>
+
+    {{/if}}
+
+    <p class="text-gray-800 font-body mt-[1rem] text-[1.5rem]">{{story.content}}</p>
+
+    <hr class="mt-[2rem] mb-[2rem] bg-[#0a0a0a]">
+
+    {{#if comments.length}}
+        <h3 class="text-[2rem] font-semibold font-head mt-4 mb-4">Comments</h3>
+        {{#each comments}}
+            {{#with this.user as |currentUser|}}
+
+                <div class="border border-gray-300 p-4 mb-4 rounded">
+                    <div class="flex justify-between items-center">
+                        <p class="text-primary-200 text-xl font-body">
+                            <a href="/u/{{../../user._id}}">{{../this.username}}</a>
+                        </p>
+                    </div>
+
+                    <div class="flex w-full">
+                        <p class="text-black text-[1rem] font-body mr-[2rem]">{{../this.timestamp}}</p>
+                    
+                        {{#if (equals ../../user._id currentUser)}}
+                            <a href='/delete/comment/{{../this._id}}'>
+                                <img class="h-[20px] w-[20px]" src="/images/delete.svg" alt="Delete Comment">
+                            </a>
+                        {{/if}}
+                    </div>
+
+                    <hr class="mt-[1rem] mb-[1rem] bg-[#0a0a0a]">
+                    <p class="text-black text-lg font-body">{{../this.body}}</p>
+                </div>
+
+            {{/with}}
         {{/each}}
     {{/if}}
 
     {{#unless own}}
-        <form method="post" action="" class="mb-4 mt-[1rem]">
+        <form method="post" action="" class="mb-4 mt-[2rem]">
             <textarea name="comment" class="w-full p-2 border border-gray-300 rounded-lg" placeholder="Leave a Comment!"></textarea>
-            <button type="submit" class="bg-primary-500 text-white rounded-lg px-4 py-2 hover:bg-primary-600">Submit</button>
+            <button type="submit" class="bg-primary-300 text-white rounded-lg px-4 py-2 hover:bg-primary-400 mt-[0.75rem]">Submit</button>
         </form>
     {{/unless}}
+    
 </div>

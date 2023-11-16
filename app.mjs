@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { existsSync, mkdirSync } from "fs";
 import passport from "passport";
 import { Strategy as LocalStrategy } from 'passport-local';
+import Handlebars from 'handlebars';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -18,6 +19,7 @@ const storageDirectory = './public/uploads'; // Specify the destination director
 const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
 
 const User = mongoose.model('User');
+const Comment = mongoose.model('Comment');
 const Story = mongoose.model('Story');
 const Follow = mongoose.model('Follow');
 
@@ -43,6 +45,10 @@ const upload = multer({ storage: storage });
 
 app.set('view engine', 'hbs');
 
+Handlebars.registerHelper('equals', function (arg1, arg2, options) {
+    return arg1.equals(arg2) ? options.fn(this) : options.inverse(this);
+});
+
 app.use(express.urlencoded({extended : false}));
 app.use(express.static(path.resolve(__dirname, 'public')));
 
@@ -63,8 +69,7 @@ app.get('/', async (req, res) => {
 
     if (req.isAuthenticated()) {
 
-        const recentPosts = (await Story.find().sort({timestamp: -1}).populate('author')).filter(story => story.author != req.user._id);
-
+        const recentPosts = (await Story.find().sort({timestamp: -1}).populate('author')).filter(story => !story.author._id.equals(req.user._id));
         res.render('index', {user: req.user, posts: recentPosts});
     }
 
@@ -78,7 +83,7 @@ app.get('/following', async (req, res) => {
     if (req.isAuthenticated()) {
 
         const following = (await Follow.find({following: req.user._id})).map(follow => follow.followed);
-        const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1});
+        const latestFollowingPosts = await Story.find({author: {$in: following}}).sort({timestamp: -1}).populate('author');
         res.render('following', {posts: latestFollowingPosts});
     }
 
@@ -99,16 +104,12 @@ app.get('/search', async (req, res) => {
             const search_query = new RegExp(req.query.find, 'i');
 
             matching_users = await User.find({username: search_query});
+
             matching_posts = await Story.find({$or: [
                 {title: search_query},
                 {location: search_query},
                 {content: search_query}
-            ]});
-        }
-
-        else {
-            matching_users = (await User.find({})).filter(user => {user._id != req.user._id});
-            matching_posts = (await Story.find({}).sort({timestamp: -1})).filter(story => {story.author != req.user._id});
+            ]}).populate('author');
         }
 
         res.render('search', {users: matching_users,
@@ -135,7 +136,8 @@ app.get('/you', async (req, res) => {
 app.get('/bookmarked', async (req, res) => {
 
     if (req.isAuthenticated()) {
-        const bookmarked_posts = await Story.find({bookmarks: req.user._id});
+
+        const bookmarked_posts = await Story.find({bookmarks: req.user._id}).populate('author');
         res.render('bookmarks', {bookmarks: bookmarked_posts});
     }
 
@@ -147,7 +149,8 @@ app.get('/bookmarked', async (req, res) => {
 app.get('/liked', async (req, res) => {
 
     if (req.isAuthenticated()) {
-        const liked_posts = await Story.find({likes: req.user._id});
+
+        const liked_posts = await Story.find({likes: req.user._id}).populate('author');
         res.render('likes', {likes: liked_posts});
     }
 
@@ -230,13 +233,17 @@ app.get('/u/:userID', async (req, res) => {
     try {
 
         const user = await User.findOne({_id: req.params.userID});
-        const posts = await Story.find({author: user});
+        const posts = await Story.find({author: user}).populate('author');
         const following = await Follow.findOne({following: req.user._id, followed: user._id});
-        
+        const numFollowing = (await Follow.find({following: user._id})).length;
+        const numFollowers = (await Follow.find({followed: user._id})).length;
+    
         res.render('profile', {stories: posts,
                                 own: req.user._id.equals(req.params.userID),
                                 user: user,
-                                following: following ? true : false});
+                                following: following ? true : false,
+                                numFollowing: numFollowing,
+                                numFollowers: numFollowers});
     }
 
     catch(error) {
@@ -251,18 +258,20 @@ app.get('/story/:storyID', async (req, res) => {
 
         try {
 
-            const story = await Story.findOne({_id: req.params.storyID});
+            const story = await Story.findOne({_id: req.params.storyID})
 
             if (story) {
 
                 const poster = await User.findOne({_id: story.author});
+                const comments = await Comment.find({story: story._id});
 
                 res.render('story', {story: story,
                                      poster: poster,
                                      own: req.user._id.equals(story.author),
-                                    user: req.user,
-                                    liked: story.likes.includes(req.user._id),
-                                    bookmarked: story.bookmarks.includes(req.user._id)
+                                     user: req.user,
+                                     liked: story.likes.includes(req.user._id),
+                                     bookmarked: story.bookmarks.includes(req.user._id),
+                                     comments: comments
                 });
             }
 
@@ -282,12 +291,18 @@ app.get('/story/:storyID', async (req, res) => {
 app.post('/story/:storyID', async (req, res) => {
 
     try {
-        const newComment = {user: req.user, username: req.user.username, body: req.body.comment}
-        const updatedStory = await Story.findOneAndUpdate({_id: req.params.storyID}, {$push: {comments: newComment}})
+        const newComment = new Comment(
+            {story: req.params.storyID,
+             user: req.user,
+             username: req.user.username,
+             body: req.body.comment});
+
+        await newComment.save();
         res.redirect(req.path);
     }
 
-    catch {
+    catch(err) {
+        console.log(err);
         res.status(500).send('Internal Server Error');
     }
 })
@@ -305,9 +320,9 @@ app.get('/make-post', (req, res) => {
 app.get('/edit/:story_id', async (req, res) => {
 
     try {
-        const foundStory = await Story.findOne({_id: req.params.story_id});
+        const foundStory = await Story.findOne({_id: req.params.story_id}).populate('author');
 
-        if (foundStory && req.user._id.equals(foundStory.author)) {
+        if (foundStory && req.user._id.equals(foundStory.author._id)) {
             res.render('post_edit', {story: foundStory});
         } 
     }
@@ -325,10 +340,14 @@ app.get('/delete/:story_id', async (req, res) => {
         const foundStory = await Story.findOne({_id: req.params.story_id});
 
         if (foundStory && req.user._id.equals(foundStory.author)) {
+
             await Story.deleteOne({_id: req.params.story_id});
+            res.redirect(`/u/${req.user._id}`);
         }
 
-        res.redirect('/');
+        else {
+            res.redirect('/');
+        }
     }
 
     catch {
@@ -349,7 +368,7 @@ app.post('/edit/:story_id', upload.array('images'), async (req, res) => {
             let imageUrls = foundStory.images;
 
             if (uploadedFiles.length) {
-                imageUrls = uploadedFiles.map(file => file.path);
+                imageUrls = uploadedFiles.map(file => `/uploads/${file.filename}`);
             }
 
             const updatedDetails = {
@@ -454,7 +473,7 @@ app.get('/follow/:user_id', async (req, res) => {
                 }
             }
 
-            res.redirect(`/u/${followed.username}`);
+            res.redirect(`/u/${followed._id}`);
         }
 
         catch(error) {
@@ -475,7 +494,7 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
 
     try { 
       // Save the image file URLs to an array
-
+      
       const imageUrls = uploadedFiles.map(file => `/uploads/${file.filename}`);
   
       // Create a new story document with the image URLs
@@ -497,27 +516,6 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
     }
   });
 
-app.get('/edit', (req, res) => {
-
-    if (req.isAuthenticated()) {
-        res.render('profile_edit', {user: req.user});
-    }
-})
-
-app.post('/edit', async (req, res) => {
-
-    if (req.user.username.equals(req.body.username)) {
-
-        if (!req.user.bio.equals(req.body.bio)) {
-
-            await User.findOneAndUpdate({_id: req.user._id}, {bio: req.body.bio});
-            req.user = await User.findOne({_id: req.user._id});
-        }
-        
-        res.redirect('/');
-    }
-});
-
 app.get('/delete', async (req, res) => {
 
     if (req.isAuthenticated()) {
@@ -532,6 +530,29 @@ app.get('/delete', async (req, res) => {
             console.log(error);
             res.status(500).send('Internal Server Error.');
         }
+    }
+})
+
+app.get('/delete/comment/:commentID', async (req, res) => {
+
+    try {
+        const deleteComment = await Comment.findOne({_id: req.params.commentID});
+
+        if (deleteComment) {
+
+            const redirectTo = deleteComment.story;
+            await Comment.deleteOne({_id: req.params.commentID});
+            res.redirect(`/story/${redirectTo}`)
+        }
+
+        else {
+            res.status(500).send('InternaL Server Erorr');
+        }
+    }
+
+    catch(err) {
+        console.log(err);
+        res.status(500).send('InternaL Server Erorr');
     }
 })
 

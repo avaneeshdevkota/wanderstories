@@ -7,21 +7,14 @@ const userSchema = new mongoose.Schema({
 
   // Unique username for the user, used for authentication
   username: { type: String, required: true, unique: true },
-
-  // Bio to display on user profile
-  bio: { type: String, required: false},
-  
-  // List of users that the current user is following
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  stories: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }],
-  bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Story' }]
-
 });
 
 userSchema.plugin(passportLocalMongoose); 
 const User = mongoose.model('User', userSchema);
 
 const commentSchema = new mongoose.Schema({
+
+  story: {type: mongoose.Schema.Types.ObjectId, ref: 'Story'},
 
   // User who made the comment, referencing the User entity
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -35,6 +28,8 @@ const commentSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 
 });
+
+const Comment = mongoose.model('Comment', commentSchema);
 
 const storySchema = new mongoose.Schema({
 
@@ -61,9 +56,6 @@ const storySchema = new mongoose.Schema({
 
   // Users who have bookmarked the story, referencing User entities
   bookmarks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-
-  // Comments associated with the story, an array of embedded comment documents
-  comments: [commentSchema]
 });
 
 const Story = mongoose.model('Story', storySchema);

@@ -1,49 +1,54 @@
-<form method="get" action="">
-    <input type="text" name="find" placeholder="I'm looking for ...">
-    <input type="submit" value="Search">
-</form>
+<nav class="flex items-center justify-center w-full bg-primary-400 py-4 text-[1.25rem]">
+    <a href="/following" class="text-white font-head font-bold mx-[3rem]">Following</a>
+    <a href="/search" class="text-white font-head font-bold mx-[3rem]">Search</a>
+    <a href="/you" class="text-white font-head font-bold mx-[3rem]">You</a>
+</nav>
 
-{{#if users.length}}
-    <h1>Users</h1>
-    {{#each users}}
-        <div>
-            <a href="/u/{{this.username}}">{{this.username}}</a>
-        </div>
-    {{/each}}
-{{/if}} 
+<div class="py-4 space-y-4 flex flex-col items-center justify-center">
 
-{{#if posts.length}}
-    <h1>Stories</h1>
-    {{#each titles}}
-        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
-            title: {{this.title}}
-            location: {{this.location}}
-            posted on: {{this.timestamp}}
-            likes: {{this.likes.length}}
-        </div>
-    {{/each}}
-{{/if}} 
+    <form method="get" action="" id="search">
+        <input type="text" name="find" placeholder="I'm looking for ..." class="border rounded-l-md py-2 px-4 focus:outline-none focus:ring focus:border-blue-300">
+        <button type="submit" class="bg-primary-300 text-white py-2 px-4 rounded-r-md hover:bg-primary-400 focus:outline-none focus:ring focus:border-blue-300">Search</button>
+    </form>
+    
+    {{#if users.length}}
+        <h1 class="text-[4rem] font-bold font-head">Relevant Users</h1>
 
-{{#if contents.length}}
-    <h1>Contents</h1>
-    {{#each titles}}
-        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
-            title: {{this.title}}
-            location: {{this.location}}
-            posted on: {{this.timestamp}}
-            likes: {{this.likes.length}}
+        <div class="flex justify-evenly">
+            {{#each users}}
+                <div onclick="location.href='/u/{{this._id}}';" class="relative p-4 group flex items-center mr-[2rem] border border-gray-300 rounded-md cursor-pointer">
+                    <h3 class="text-[1rem] text-center font-bold font-head">{{this.username}}</h3>
+                </div>
+            {{/each}}
         </div>
-    {{/each}}
-{{/if}} 
 
-{{#if location.length}}
-    <h1>Location</h1>
-    {{#each titles}}
-        <div onclick = "location.href = '/story/{{this._id}}';" style="cursor: pointer;">
-            title: {{this.title}}
-            location: {{this.location}}
-            posted on: {{this.timestamp}}
-            likes: {{this.likes.length}}
+    {{/if}} 
+
+    {{#if posts.length}}
+
+        <h1 class="text-[4rem] font-bold font-head">Relevant Stories</h1>
+        
+        <div class="grid grid-cols-3 gap-4">
+            {{#each posts}}
+                <div onclick="location.href='/story/{{this._id}}';" class="relative p-4 group flex items-center">
+                    <img src="{{this.images.[0]}}" alt="Post Image">
+                    <div class="opacity-0 bg-black text-white p-2 absolute inset-0 flex items-center justify-center group-hover:opacity-75 transition-opacity duration-300">
+                        <div>
+                            <h3 class="text-[3rem] text-center font-bold font-head">{{this.title}}</h3>
+                            <h3 class="text-[2rem] text-center font-head">{{this.location}}</h3>
+                            <h3 class="text-[1rem] text-center font-body">By @{{this.author.username}}</h3>
+                        </div>
+                    </div>
+                </div>
+            {{/each}}
         </div>
-    {{/each}}
-{{/if}} 
+    {{/if}} 
+
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchQuery = urlParams.get('find');
+    const searchBar = document.querySelector('input[name="find"]');
+    searchBar.value = searchQuery;
+</script>

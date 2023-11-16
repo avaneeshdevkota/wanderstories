@@ -4,34 +4,29 @@
     <a href="/you" class="text-white font-head font-bold mx-[3rem]">You</a>
 </nav>
 
-{{#if posts.length}}
+<div class="py-4 space-y-4 flex flex-col items-center justify-center">
 
-    <h2>From People You Follow</h2>
+    {{#if posts.length}}
+    
+        <h1 class="text-[4rem] font-bold font-head">From People You Follow</h1>
 
-    <div class="my-4 mx-2">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div class="grid grid-cols-3 gap-4">
             {{#each posts}}
-                <div class="md:col-span-1 lg:col-span-1">
-                    <div onclick="location.href='/story/{{this._id}}';" class="cursor-pointer border border-gray-200 rounded-lg hover:shadow-lg bg-white post p-4">
-                        <div class="flex">
-                            <div class="w-2/3 mr-4">
-                                <h2 class="text-xl font-semibold text-blue-500">{{this.title}}</h2>
-                                <p class="text-gray-700"><a class="hover:text-primary-400" href="/u/{{author._id}}">{{author.username}}</a></p>
-                                <p class="text-gray-600">Posted on: {{this.timestamp}}</p>
-                                <p class="text-gray-600">Likes: {{this.likes.length}}</p>
-                            </div>
-                            <div class="w-1/3 relative w-[10rem] h-[10rem]">
-                                {{#if this.images.length}}
-                                    <img class="object-cover object-center w-full h-full rounded-lg" src="{{this.images.[0]}}" alt="Image">
-                                {{/if}}
-                            </div>
+                <div onclick="location.href='/story/{{this._id}}';" class="relative p-4 group flex items-center">
+                    <img src="{{this.images.[0]}}" alt="Post Image">
+                    <div class="opacity-0 bg-black text-white p-2 absolute inset-0 flex items-center justify-center group-hover:opacity-75 transition-opacity duration-300">
+                        <div>
+                            <h3 class="text-[3rem] text-center font-bold font-head">{{this.title}}</h3>
+                            <h3 class="text-[2rem] text-center font-head">{{this.location}}</h3>
+                            <h3 class="text-[1rem] text-center font-body">By @{{this.author.username}}</h3>
                         </div>
                     </div>
                 </div>
             {{/each}}
         </div>
-    </div>
 
-{{else}}
-    <h2> Nothing to see here. Follow people to see their posts here! </h2>  
-{{/if}}
+    {{else}}
+        <h1 class="text-[4rem] font-bold font-head">Follow people to see their posts here.</h1>
+    {{/if}}
+
+</div>

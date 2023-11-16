@@ -1,7 +1,35 @@
-<form method="post" action="" enctype="multipart/form-data">
-    <input type="text" name="title" placeholder="title" required>
-    <textarea id="content" name="content" placeholder="Write your story!" required></textarea>
-    <input type="file" name="images" multiple="multiple">
-    <input type="text" name="location" placeholder="Where?">
-    <input type="submit" value="Post">
+<nav class="flex items-center justify-center w-full bg-primary-400 py-4 text-[1.25rem]">
+    <a href="/following" class="text-white font-head font-bold mx-[3rem]">Following</a>
+    <a href="/search" class="text-white font-head font-bold mx-[3rem]">Search</a>
+    <a href="/you" class="text-white font-head font-bold mx-[3rem]">You</a>
+</nav>
+
+<form method="post" action="" enctype="multipart/form-data" class="w-2/3 mx-auto my-[2rem]">
+    <div class="mb-4">
+        <label for="title" class="block text-gray-700 text-[1rem] font-body font-bold mb-2">Title</label>
+        <input type="text" id="title" name="title" placeholder="Enter title" required
+               class="w-full p-2 border border-gray-300 rounded font-body">
+    </div>
+
+    <div class="mb-4">
+        <label for="content" class="block text-gray-700 text-[1rem] font-body font-bold mb-2">Content</label>
+        <textarea id="content" name="content" placeholder="Write your story!" required
+                  class="w-full p-2 border border-gray-300 rounded font-body"></textarea>
+    </div>
+
+    <div class="mb-4">
+        <label for="images" class="block text-gray-700 text-[1rem] font-body font-bold mb-2">Images</label>
+        <input type="file" accept="image/jpeg, image/png" id="images" name="images" multiple="multiple" required
+               class="w-full p-2 border border-gray-300 rounded font-body">
+    </div>
+
+    <div class="mb-4">
+        <label for="location" class="block text-gray-700 text-[1rem] font-body font-bold mb-2">Location</label>
+        <input type="text" id="location" name="location" placeholder="Where?" required
+               class="w-full p-2 border border-gray-300 rounded font-body">
+    </div>
+
+    <div class="mb-4">
+        <input type="submit" value="Post" class="bg-primary-300 text-white font-body px-4 py-2 rounded hover:bg-primary-400 cursor-pointer">
+    </div>
 </form>
