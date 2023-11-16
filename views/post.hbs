@@ -13,8 +13,7 @@
 
     <div class="mb-4">
         <label for="content" class="block text-gray-700 text-[1rem] font-body font-bold mb-2">Content</label>
-        <textarea id="content" name="content" placeholder="Write your story!" required
-                  class="w-full p-2 border border-gray-300 rounded font-body"></textarea>
+        <textarea name="content" id="editor"></textarea>
     </div>
 
     <div class="mb-4">
@@ -33,3 +32,26 @@
         <input type="submit" value="Post" class="bg-primary-300 text-white font-body px-4 py-2 rounded hover:bg-primary-400 cursor-pointer">
     </div>
 </form>
+
+<script src="https://cdn.ckeditor.com/ckeditor5/40.1.0/classic/ckeditor.js"></script>
+<script>
+
+    let textEditor;
+
+    ClassicEditor
+    .create( document.querySelector( '#editor' ), {
+
+        toolbar: {
+            items: [
+                'undo', 'redo',
+                '|', 'bold', 'italic'
+            ],
+            shouldNotGroupWhenFull: true
+        }
+
+    } ).then((editor) => {
+        textEditor = editor;
+    }).catch( error => {
+        console.log( error );
+    } );
+</script>

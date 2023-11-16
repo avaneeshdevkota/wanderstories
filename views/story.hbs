@@ -12,12 +12,12 @@
 
         <div class = "flex flex-row space-x-4">
             <img class="h-[20px] w-[20px]" src="/images/user.svg">
-            <a href="/u/{{poster._id}}" class="text-primary-200 font-body font-bold">{{poster.username}}
+            <a href="/u/{{poster._id}}" class="text-primary-200 font-body font-bold hover:underline">{{poster.username}}
         </div>
 
         <div class="flex flex-row space-x-4">
             <img class="h-[20px] w-[20px]" src="/images/location.svg">
-            <a href="https://maps.google.com/?q={{story.location}}" class="text-primary-200 font-body font-bold">{{story.location}}</a>
+            <a href="https://maps.google.com/?q={{story.location}}" class="text-primary-200 font-body font-bold hover:underline">{{story.location}}</a>
         </div>
 
         <div class="flex flex-row space-x-4">
@@ -65,7 +65,9 @@
 
     {{/if}}
 
-    <p class="text-gray-800 font-body mt-[1rem] text-[1.5rem]">{{story.content}}</p>
+    {{{story.content}}}
+
+    {{!-- <p class="text-gray-800 font-body mt-[1rem] text-[1rem]">{{story.content}}</p> --}}
 
     <hr class="mt-[2rem] mb-[2rem] bg-[#0a0a0a]">
 
@@ -77,7 +79,7 @@
                 <div class="border border-gray-300 p-4 mb-4 rounded">
                     <div class="flex justify-between items-center">
                         <p class="text-primary-200 text-xl font-body">
-                            <a href="/u/{{../../user._id}}">{{../this.username}}</a>
+                            <a href="/u/{{../../user._id}}" class="hover:underline">{{../this.username}}</a>
                         </p>
                     </div>
 

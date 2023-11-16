@@ -19,8 +19,8 @@ const storageDirectory = './public/uploads'; // Specify the destination director
 const storagePath = path.join(__dirname, storageDirectory); // Create the absolute path
 
 const User = mongoose.model('User');
-const Comment = mongoose.model('Comment');
 const Story = mongoose.model('Story');
+const Comment = mongoose.model('Comment');
 const Follow = mongoose.model('Follow');
 
 // Ensure the destination directory exists or create it if necessary
@@ -511,7 +511,8 @@ app.post('/make-post', upload.array('images'), async (req, res) => {
       res.redirect(`/story/${savedStory._id}`);
   
     } catch (error) {
-      console.error(error);
+        
+      console.log(error);
       res.status(500).send('Error saving the story.');
     }
   });
@@ -521,6 +522,13 @@ app.get('/delete', async (req, res) => {
     if (req.isAuthenticated()) {
         
         try {
+
+            await Story.deleteMany({author: req.user._id});
+            await Comment.deleteMany({user: req.user._id});
+            await Follow.deleteMany({$or : [
+                {following: req.user._id},
+                {followed: req.user._id}
+            ]});
             await User.deleteOne({_id: req.user._id});
             res.redirect('/logout');
 

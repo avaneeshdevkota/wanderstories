@@ -7,7 +7,6 @@
 <div class="py-4 space-y-4 flex flex-col items-center justify-center">
 
     {{#if posts.length}}
-    
         <h1 class="text-[4rem] font-bold font-head">From People You Follow</h1>
 
         <div class="grid grid-cols-3 gap-4">
@@ -17,8 +16,8 @@
                     <div class="opacity-0 bg-black text-white p-2 absolute inset-0 flex items-center justify-center group-hover:opacity-75 transition-opacity duration-300">
                         <div>
                             <h3 class="text-[3rem] text-center font-bold font-head">{{this.title}}</h3>
-                            <h3 class="text-[2rem] text-center font-head">{{this.location}}</h3>
-                            <h3 class="text-[1rem] text-center font-body">By @{{this.author.username}}</h3>
+                            <h3 class="text-[1.5rem] text-center font-head">{{this.location}}</h3>
+                                <h3 class="text-[1rem] text-center font-body font-bold">By <a href="/u/{{this.author._id}}" class="hover:underline">@{{this.author.username}}</a></h3>
                         </div>
                     </div>
                 </div>

@@ -109,11 +109,14 @@ Certainly, here's the information presented in the requested format:
 - __List of possible candidate modules or solutions:__ CSS frameworks, like Bootstrap or Material-UI.
 - __Points for research topic:__ 1 point
 
-**Google Maps API**
-- __What is it?__ The Google Maps API provides tools for integrating interactive maps and location-based services into your web app.
-- __Why use it?__ Incorporating the Google Maps API allows you to enhance user experiences with interactive maps, geolocation, and location-based features.
-- __List of possible candidate modules or solutions:__ Mapbox, Leaflet, OpenStreetMap.
-- __Points for research topic:__ 1 point
+**dotenv**
+-__What is it?__ dotenv is a zero-dependency module in Node.js that loads environment variables from a .env file into process.env. It simplifies the management of sensitive information, such as API keys or configuration settings, in Node.js applications.
+
+-__Why use it?__ Use dotenv to securely store sensitive information and configuration settings outside of your codebase. It helps maintain a separation of concerns, ensuring that sensitive information is not hard-coded in your source code, which is crucial for security.
+
+Points for research topic: 1 point
+
+**Selenium**
 
 ## [Link to Initial Main Project File](app.mjs) 
 
