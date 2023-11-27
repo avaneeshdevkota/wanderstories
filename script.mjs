@@ -69,7 +69,7 @@ const generateStories = async (users) => {
     for (let i = 0; i < 10; i++) {
 
         let post_images = [];
-        const num_images = Math.floor((Math.random() * 7))
+        const num_images = Math.floor(((Math.random() + 1) * 5))
         
         for (let j = 0; j < num_images; j++) {
             post_images.push(await getRandomImageUrl(locations[i].replace(' ', '')));
