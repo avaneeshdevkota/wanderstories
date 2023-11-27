@@ -109,7 +109,7 @@ Certainly, here's the information presented in the requested format:
 - __What is it?__ Passport.js is a robust authentication middleware for Node.js applications. It simplifies the process of handling user authentication, supporting various authentication strategies such as username/password, social media logins, and more.
 - __Why use it?__ Passport.js streamlines the implementation of authentication in the application, providing a modular and flexible framework. It ensures a secure and seamless user experience, allowing us to focus on building features rather than dealing with intricate authentication details.
 - __List of possible candidate modules or solutions:__ Passport.js itself, along with various authentication strategies like Local, OAuth, OpenID, and more. Additionally, we can explore Passport.js plugins for specific authentication providers.
-- __Points for research topic:__ 5 points
+- __Points for research topic:__ 4 points
 
 **TailwindCSS**
 

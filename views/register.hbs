@@ -12,16 +12,83 @@
                 {{error}}
             </div>
         {{/if}}
+
+        <div class="no-match bg-red-500 text-white p-4 mb-4 font-body font-bold" style="display: none;">
+            Something is wrong here.
+        </div>
         
         <form method="post" action="" class="flex flex-col justify-center items-center gap-[0.75rem] mx-auto w-[75%] bg-white p-[1rem] rounded">
             <input type="text" name="username" placeholder="Username" required
                 class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
             <input type="password" name="password" placeholder="Password" required
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body" id="password">
             <input type="password" name="pwc" placeholder="Confirm Password" required
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body">
+                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:border-primary-500 placeholder:font-body" id="confirm-password">
             <input type="submit" value="Register" class="mt-[1rem] w-[50%] px-4 py-2 text-white bg-primary-400 cursor-pointer rounded-md font-body">
         <p class="mt-[2rem] text-center font-body">Already have an account? <a href="/login" class="text-primary-300 hover:underline font-bold">Log In!</a></p>
     </form>
     </div>
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const errorDiv = document.querySelector('.no-match');
+    const registerButton = document.querySelector('[type="submit"]');
+
+    form.addEventListener('submit', function (event) {
+      if (!validatePasswords()) {
+        event.preventDefault();
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    confirmPasswordInput.addEventListener('input', function () {
+      validatePasswords();
+    });
+
+    function validatePasswords() {
+      const password = passwordInput.value;
+      const confirmPassword = confirmPasswordInput.value;
+
+      // Password requirements
+      const uppercaseRegex = /[A-Z]/;
+      const digitRegex = /\d/;
+      const nonAlphanumericRegex = /\W/;
+      const minLength = 8;
+
+      let errorList = [];
+
+      if (password !== confirmPassword) {
+        errorList.push('Passwords do not match.');
+      } else {
+        if (!uppercaseRegex.test(password)) {
+          errorList.push('Uppercase letter is required.');
+        }
+        if (!digitRegex.test(password)) {
+          errorList.push('Digit is required.');
+        }
+        if (!nonAlphanumericRegex.test(password)) {
+          errorList.push('Non-alphanumeric character is required.');
+        }
+        if (password.length < minLength) {
+          errorList.push(`Password should be at least ${minLength} characters long.`);
+        }
+      }
+
+      if (errorList.length > 0) {
+        errorDiv.innerHTML = '<ul>' + errorList.map(item => `<li>${item}</li>`).join('') + '</ul>';
+        errorDiv.style.display = 'block';
+        registerButton.disabled = true;
+        return false;
+      } else {
+        errorDiv.style.display = 'none';
+        registerButton.disabled = false;
+        return true;
+      }
+    }
+  });
+</script>
+
