@@ -12,7 +12,7 @@
 
         <div class="grid grid-cols-3 gap-4">
             {{#each likes}}
-                <div onclick="location.href='/story/{{this._id}}';" class="relative p-4 group flex items-center">
+                <div onclick="location.href='/story/{{this._id}}';" class="relative p-4 group flex items-center cursor-pointer">
                     <img src="{{this.images.[0]}}" alt="Post Image">
                     <div class="opacity-0 bg-black text-white p-2 absolute inset-0 flex items-center justify-center group-hover:opacity-75 transition-opacity duration-300">
                         <div>

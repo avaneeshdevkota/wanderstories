@@ -152,13 +152,21 @@ Certainly, here's the information presented in the requested format:
 
 Points for research topic: 1 point
 
+**Minimal Client-Side Form Validation**
+
+-__What is it?__ Client-side form validation involves implementing basic input checks on the user's browser to instantly validate essential data, such as required fields and format constraints, providing immediate feedback.
+
+-__Why use it?__ Using minimal client-side validation enhances the user experience by offering real-time error feedback, reduces server load by preventing the submission of invalid data, and ensures a consistent and efficient form submission process.
+
+Points for research topic: 1 point
 
 ## [Link to Initial Main Project File](app.mjs) 
 
 ## Annotations / References Used
 
-* [React Documentation](https://devdocs.io/react/)
-* [React Markdown](https://www.npmjs.com/package/react-markdown)
+* [Passport.js Documentation](https://www.passportjs.org/docs/)
+* [Passport-Local Mongoose](https://www.npmjs.com/package/passport-local-mongoose)
 * [TailwindCSS Documentation](https://v2.tailwindcss.com/docs)
-* [Google Maps API](https://developers.google.com/maps)
+* [Faker.js Documentation](https://fakerjs.dev/guide/)
+* [CKEditor](https://ckeditor.com/docs/)
 

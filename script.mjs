@@ -59,8 +59,8 @@ const getRandomImageUrl = async (query) => {
 const generateStories = async (users) => {
     
     const stories = [];
-    const titles = ['48 Hours in NYC', 'Culinary Delights in Tokyo', 'Hidden Gems of Santorini', "Unwinding on Maui's Beaches",
-                    'Conquering the Trails of the Swiss Alps', 'Holi Festival in Jaipur', 'Pampering Yourself in the Maldives',
+    const titles = ['48 Hours in NYC', 'Delightful Tokyo', 'Hidden Gems of Santorini', "Unwinding on Maui's Beaches",
+                    'Conquering the Trails of the Swiss Alps', 'Jolly in Jaipur', 'Pampering Yourself in the Maldives',
                     'Kruger National Park', 'Pacific Coast Highway by Car', 'Heritage Sites of Rome'];
 
     const locations = ['New York City, USA', 'Tokyo, Japan', 'Santorini, Greece', 'Maui, Hawaii', 'Swiss Alps', 'Jaipur, India',
@@ -68,12 +68,18 @@ const generateStories = async (users) => {
 
     for (let i = 0; i < 10; i++) {
 
-        const imageUrl = await getRandomImageUrl(locations[i].replace(' ', ''));
+        let post_images = [];
+        const num_images = Math.floor((Math.random() * 7))
+        
+        for (let j = 0; j < num_images; j++) {
+            post_images.push(await getRandomImageUrl(locations[i].replace(' ', '')));
+        }
+
         const user = users[Math.floor(Math.random() * users.length)];
         const story = new Story({
             title: titles[i],
             content: faker.lorem.paragraphs(),
-            images: [imageUrl],
+            images: post_images,
             location: locations[i],
             author: user._id,
       });
